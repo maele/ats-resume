@@ -22,7 +22,7 @@ A modern, **ATS-friendly**, **self-hosted** resume builder with a clean UI, real
 
 ## 🚀 Demo
 
-Try the live demo: [https://resume-builder.onrender.com](https://resume-builder.onrender.com)
+Try the live demo: [https://resume-builder.onrender.com](https://ats-resume-2.onrender.com/)
 
 ---
 
