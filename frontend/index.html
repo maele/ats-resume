@@ -54,54 +54,47 @@
           </div>
         </div>
 
-        <!-- Professional summary -->
         <div class="form-section">
           <h3 class="font-semibold text-lg mb-3">Professional Summary</h3>
           <textarea id="summary" placeholder="Write a short summary..." class="w-full p-2 border rounded" rows="4"></textarea>
         </div>
 
-        <!-- Experience -->
         <div class="form-section">
           <h3 class="font-semibold text-lg mb-3">Experience</h3>
           <div id="experienceItems"></div>
           <button type="button" id="addExperience" class="mt-2 text-sm text-primary-600 hover:underline">+ Add Experience</button>
         </div>
 
-        <!-- Education -->
         <div class="form-section">
           <h3 class="font-semibold text-lg mb-3">Education</h3>
           <div id="educationItems"></div>
           <button type="button" id="addEducation" class="mt-2 text-sm text-primary-600 hover:underline">+ Add School</button>
         </div>
 
-        <!-- Skills -->
         <div class="form-section">
           <h3 class="font-semibold text-lg mb-3">Skills</h3>
           <div id="skillsContainer" class="space-y-2"></div>
           <button type="button" id="addSkill" class="mt-2 text-sm text-primary-600 hover:underline">+ Add Skill</button>
         </div>
-        <!-- Projects -->
+
         <div class="form-section">
           <h3 class="font-semibold text-lg mb-3">Projects</h3>
           <div id="projectsContainer" class="space-y-3"></div>
           <button type="button" id="addProject" class="mt-2 text-sm text-primary-600 hover:underline">+ Add Project</button>
         </div>
 
-        <!-- Certifications -->
         <div class="form-section">
           <h3 class="font-semibold text-lg mb-3">Certifications</h3>
           <div id="certificationsContainer" class="space-y-3"></div>
           <button type="button" id="addCertification" class="mt-2 text-sm text-primary-600 hover:underline">+ Add Certification</button>
         </div>
 
-        <!-- Other Contributions -->
         <div class="form-section">
           <h3 class="font-semibold text-lg mb-3">Other Contributions</h3>
           <div id="contributionsContainer" class="space-y-3"></div>
           <button type="button" id="addContribution" class="mt-2 text-sm text-primary-600 hover:underline">+ Add Contribution</button>
         </div>
 
-        <!-- References -->
         <div class="form-section">
           <h3 class="font-semibold text-lg mb-3">References</h3>
           <div id="referencesContainer" class="space-y-3"></div>
@@ -124,10 +117,11 @@
           ↑ Top
         </button>
       </div>
+    </div>
 
-    <!-- Preview-Only View (your original resume) -->
+    <!-- Preview-Only View -->
     <div id="previewView" class="hidden">
-      <!-- Will be populated by JS -->
+      <!-- Populated by JS -->
     </div>
   </div>
 
@@ -141,9 +135,8 @@
   const educationItems = document.getElementById('educationItems');
   const addExpBtn = document.getElementById('addExperience');
   const addEduBtn = document.getElementById('addEducation');
-  const skillsInput = document.getElementById('skillsInput');
 
-  // State - now education is an array
+  // State
   let resumeData = {
     name: "",
     title: "",
@@ -163,10 +156,15 @@
     renderExperienceForm();
     renderEducationForm();
     renderSkillsForm();
+    renderProjectsForm();
+    renderCertificationsForm();
+    renderContributionsForm();
+    renderReferencesForm();
     bindEvents();
     loadFromLocalStorage();
     updatePreview();
-    // ✅ Add Back to Top button listener
+
+    // Back to Top button
     const backToTopBtn = document.getElementById('backToTop');
     if (backToTopBtn) {
       backToTopBtn.addEventListener('click', () => {
@@ -192,7 +190,7 @@
       renderFinalPreview();
     });
 
-    // Personal & summary inputs
+    // Personal & summary
     ['name', 'title', 'summary'].forEach(id => {
       const el = document.getElementById(id);
       if (el) {
@@ -204,7 +202,7 @@
       }
     });
 
-    // Contact inputs
+    // Contact
     ['email', 'phone', 'website', 'linkedin'].forEach(key => {
       const el = document.getElementById(key);
       if (el) {
@@ -216,7 +214,7 @@
       }
     });
 
-    // Skills
+    // Add buttons
     document.getElementById('addSkill').addEventListener('click', () => {
       resumeData.skills.push('');
       saveToLocalStorage();
@@ -252,26 +250,15 @@
       updatePreview();
     });
 
-    // Buttons
     addExpBtn.addEventListener('click', () => {
-      resumeData.experience.push({
-        role: '',
-        company: '',
-        duration: '',
-        highlights: []
-      });
+      resumeData.experience.push({ role: '', company: '', duration: '', highlights: [] });
       saveToLocalStorage();
       renderExperienceForm();
       updatePreview();
     });
 
     addEduBtn.addEventListener('click', () => {
-      resumeData.education.push({
-        degree: '',
-        school: '',
-        duration: '',
-        details: ''
-      });
+      resumeData.education.push({ degree: '', school: '', duration: '', details: '' });
       saveToLocalStorage();
       renderEducationForm();
       updatePreview();
@@ -289,20 +276,10 @@
     resumeData.experience.forEach((exp, i) => {
       const div = document.createElement('div');
       div.className = 'border p-3 mb-3 rounded bg-gray-50';
-
-      // Render achievement inputs
       const achievementsHtml = (exp.highlights || []).map((ach, aIdx) => `
         <div class="flex gap-2 mb-2">
-          <input type="text" 
-                data-exp-index="${i}" 
-                data-ach-index="${aIdx}" 
-                value="${ach}" 
-                placeholder="Achievement" 
-                class="flex-1 p-2 border rounded text-sm" />
-          <button type="button" 
-                  class="remove-achievement text-red-600 text-sm font-medium"
-                  data-exp-index="${i}" 
-                  data-ach-index="${aIdx}">✕</button>
+          <input type="text" data-exp-index="${i}" data-ach-index="${aIdx}" value="${ach}" placeholder="Achievement" class="flex-1 p-2 border rounded text-sm" />
+          <button type="button" class="remove-achievement text-red-600 text-sm font-medium" data-exp-index="${i}" data-ach-index="${aIdx}">✕</button>
         </div>
       `).join('');
 
@@ -310,76 +287,49 @@
         <input type="text" data-index="${i}" data-field="role" value="${exp.role || ''}" placeholder="Job Title" class="w-full p-2 mb-2 border rounded" />
         <input type="text" data-index="${i}" data-field="company" value="${exp.company || ''}" placeholder="Company • Location" class="w-full p-2 mb-2 border rounded" />
         <input type="text" data-index="${i}" data-field="duration" value="${exp.duration || ''}" placeholder="Duration (e.g., Jan 2020 – Present)" class="w-full p-2 mb-2 border rounded" />
-        
         <div class="mt-2">
           <label class="block text-sm font-medium text-gray-700 mb-1">Key Achievements</label>
-          <div class="space-y-2" id="achievements-${i}">
-            ${achievementsHtml}
-          </div>
+          <div class="space-y-2" id="achievements-${i}">${achievementsHtml}</div>
           <button type="button" class="mt-2 text-sm text-primary-600 hover:underline add-achievement" data-exp-index="${i}">+ Add Achievement</button>
         </div>
-        
         <button type="button" class="mt-3 text-red-600 text-sm remove-exp" data-index="${i}">Remove Experience</button>
       `;
       experienceItems.appendChild(div);
     });
 
-    // Bind events for experience fields (role, company, duration)
-    experienceItems.querySelectorAll('input[data-field]').forEach(el => {
-      el.addEventListener('input', handleExperienceInput);
-    });
-
-    // Bind "Remove Experience"
+    // Bind events...
+    experienceItems.querySelectorAll('input[data-field]').forEach(el => el.addEventListener('input', handleExperienceInput));
     experienceItems.querySelectorAll('.remove-exp').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const index = parseInt(e.target.dataset.index);
         resumeData.experience.splice(index, 1);
-        saveToLocalStorage();
-        renderExperienceForm();
-        updatePreview();
+        saveToLocalStorage(); renderExperienceForm(); updatePreview();
       });
     });
-
-    // Bind "Add Achievement"
     experienceItems.querySelectorAll('.add-achievement').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const expIndex = parseInt(e.target.dataset.expIndex);
-        if (!resumeData.experience[expIndex].highlights) {
-          resumeData.experience[expIndex].highlights = [];
-        }
+        if (!resumeData.experience[expIndex].highlights) resumeData.experience[expIndex].highlights = [];
         resumeData.experience[expIndex].highlights.push('');
-        saveToLocalStorage();
-        renderExperienceForm();
-        updatePreview();
+        saveToLocalStorage(); renderExperienceForm(); updatePreview();
       });
     });
-
-    // Bind "Remove Achievement"
     experienceItems.querySelectorAll('.remove-achievement').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const expIndex = parseInt(e.target.dataset.expIndex);
         const achIndex = parseInt(e.target.dataset.achIndex);
         resumeData.experience[expIndex].highlights.splice(achIndex, 1);
-        saveToLocalStorage();
-        renderExperienceForm();
-        updatePreview();
+        saveToLocalStorage(); renderExperienceForm(); updatePreview();
       });
     });
-
-    // Bind input for achievement fields
     experienceItems.querySelectorAll('input[data-ach-index]').forEach(input => {
       input.addEventListener('input', (e) => {
         const expIndex = parseInt(e.target.dataset.expIndex);
         const achIndex = parseInt(e.target.dataset.achIndex);
         const value = e.target.value;
-        
-        if (!resumeData.experience[expIndex].highlights) {
-          resumeData.experience[expIndex].highlights = [];
-        }
+        if (!resumeData.experience[expIndex].highlights) resumeData.experience[expIndex].highlights = [];
         resumeData.experience[expIndex].highlights[achIndex] = value;
-        
-        saveToLocalStorage();
-        updatePreview();
+        saveToLocalStorage(); updatePreview();
       });
     });
   }
@@ -388,14 +338,9 @@
     const index = parseInt(e.target.dataset.index);
     const field = e.target.dataset.field;
     const value = e.target.value;
-
-    if (!resumeData.experience[index]) {
-      resumeData.experience[index] = { highlights: [] };
-    }
+    if (!resumeData.experience[index]) resumeData.experience[index] = { highlights: [] };
     resumeData.experience[index][field] = value;
-
-    saveToLocalStorage();
-    updatePreview();
+    saveToLocalStorage(); updatePreview();
   }
 
   // ===== EDUCATION =====
@@ -415,32 +360,54 @@
     });
 
     educationItems.querySelectorAll('input').forEach(el => {
-      el.addEventListener('input', handleEducationInput);
+      el.addEventListener('input', (e) => {
+        const index = parseInt(e.target.dataset.index);
+        const field = e.target.dataset.field;
+        const value = e.target.value;
+        if (!resumeData.education[index]) resumeData.education[index] = {};
+        resumeData.education[index][field] = value;
+        saveToLocalStorage(); updatePreview();
+      });
     });
 
     educationItems.querySelectorAll('.remove-edu').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const index = parseInt(e.target.dataset.index);
         resumeData.education.splice(index, 1);
-        saveToLocalStorage();
-        renderEducationForm();
-        updatePreview();
+        saveToLocalStorage(); renderEducationForm(); updatePreview();
       });
     });
   }
 
-  function handleEducationInput(e) {
-    const index = parseInt(e.target.dataset.index);
-    const field = e.target.dataset.field;
-    const value = e.target.value;
+  // ===== SKILLS =====
+  function renderSkillsForm() {
+    const container = document.getElementById('skillsContainer');
+    container.innerHTML = '';
+    resumeData.skills.forEach((skill, i) => {
+      const div = document.createElement('div');
+      div.className = 'flex gap-2';
+      div.innerHTML = `
+        <input type="text" data-skill-index="${i}" value="${skill || ''}" placeholder="Skill (e.g., React, Python)" class="flex-1 p-2 border rounded text-sm" />
+        <button type="button" class="remove-skill text-red-600 text-sm font-medium" data-skill-index="${i}">✕</button>
+      `;
+      container.appendChild(div);
+    });
 
-    if (!resumeData.education[index]) {
-      resumeData.education[index] = {};
-    }
-    resumeData.education[index][field] = value;
+    container.querySelectorAll('input[data-skill-index]').forEach(input => {
+      input.addEventListener('input', (e) => {
+        const idx = parseInt(e.target.dataset.skillIndex);
+        resumeData.skills[idx] = e.target.value;
+        saveToLocalStorage(); updatePreview();
+      });
+    });
 
-    saveToLocalStorage();
-    updatePreview();
+    container.querySelectorAll('.remove-skill').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.target.dataset.skillIndex);
+        resumeData.skills.splice(idx, 1);
+        saveToLocalStorage(); renderSkillsForm(); updatePreview();
+      });
+    });
   }
 
   // ===== PROJECTS =====
@@ -466,8 +433,7 @@
         const field = e.target.dataset.field;
         if (!resumeData.projects[i]) resumeData.projects[i] = {};
         resumeData.projects[i][field] = e.target.value;
-        saveToLocalStorage();
-        updatePreview();
+        saveToLocalStorage(); updatePreview();
       });
     });
 
@@ -475,9 +441,7 @@
       btn.addEventListener('click', (e) => {
         const i = parseInt(e.target.dataset.projIndex);
         resumeData.projects.splice(i, 1);
-        saveToLocalStorage();
-        renderProjectsForm();
-        updatePreview();
+        saveToLocalStorage(); renderProjectsForm(); updatePreview();
       });
     });
   }
@@ -505,8 +469,7 @@
         const field = e.target.dataset.field;
         if (!resumeData.certifications[i]) resumeData.certifications[i] = {};
         resumeData.certifications[i][field] = e.target.value;
-        saveToLocalStorage();
-        updatePreview();
+        saveToLocalStorage(); updatePreview();
       });
     });
 
@@ -514,9 +477,7 @@
       btn.addEventListener('click', (e) => {
         const i = parseInt(e.target.dataset.certIndex);
         resumeData.certifications.splice(i, 1);
-        saveToLocalStorage();
-        renderCertificationsForm();
-        updatePreview();
+        saveToLocalStorage(); renderCertificationsForm(); updatePreview();
       });
     });
   }
@@ -543,8 +504,7 @@
         const field = e.target.dataset.field;
         if (!resumeData.contributions[i]) resumeData.contributions[i] = {};
         resumeData.contributions[i][field] = e.target.value;
-        saveToLocalStorage();
-        updatePreview();
+        saveToLocalStorage(); updatePreview();
       });
     });
 
@@ -552,9 +512,7 @@
       btn.addEventListener('click', (e) => {
         const i = parseInt(e.target.dataset.contIndex);
         resumeData.contributions.splice(i, 1);
-        saveToLocalStorage();
-        renderContributionsForm();
-        updatePreview();
+        saveToLocalStorage(); renderContributionsForm(); updatePreview();
       });
     });
   }
@@ -581,8 +539,7 @@
         const field = e.target.dataset.field;
         if (!resumeData.references[i]) resumeData.references[i] = {};
         resumeData.references[i][field] = e.target.value;
-        saveToLocalStorage();
-        updatePreview();
+        saveToLocalStorage(); updatePreview();
       });
     });
 
@@ -590,9 +547,7 @@
       btn.addEventListener('click', (e) => {
         const i = parseInt(e.target.dataset.refIndex);
         resumeData.references.splice(i, 1);
-        saveToLocalStorage();
-        renderReferencesForm();
-        updatePreview();
+        saveToLocalStorage(); renderReferencesForm(); updatePreview();
       });
     });
   }
@@ -703,14 +658,14 @@
     const contribsHtml = contributions.length ? `
       <section class="mb-6">
         <h2 class="text-xl font-semibold text-primary-700 mb-4 pb-1 border-b border-primary-200">Other Contributions</h2>
-      ${contributions.map(cont => `
-        <article class="mb-3">
-          <h3 class="font-medium">${cont.title}</h3>
-          ${cont.link ? `<p class="text-sm text-primary-600 mb-1"><a href="${cont.link}" target="_blank" class="hover:underline">${cont.link}</a></p>` : ''}
-          <p class="text-gray-700">${cont.description}</p>
-        </article>
-      `).join('')}
-    </section>
+        ${contributions.map(cont => `
+          <article class="mb-3">
+            <h3 class="font-medium">${cont.title}</h3>
+            ${cont.link ? `<p class="text-sm text-primary-600 mb-1"><a href="${cont.link}" target="_blank" class="hover:underline">${cont.link}</a></p>` : ''}
+            <p class="text-gray-700">${cont.description}</p>
+          </article>
+        `).join('')}
+      </section>
     ` : '';
 
     // References
@@ -729,7 +684,7 @@
       </section>
     ` : '';
 
-    // ✅ NOW build previewHtml AFTER all sections are defined
+    // ✅ All sections defined BEFORE use
     const previewHtml = `
       <header class="text-center mb-8">
         <h1 class="text-3xl font-bold mb-2">${name || 'Your Name'}</h1>
@@ -825,7 +780,7 @@
           references: Array.isArray(parsed.references) ? parsed.references : []
         };
         
-        // Populate top-level fields
+        // Populate top fields
         document.getElementById('name').value = resumeData.name;
         document.getElementById('title').value = resumeData.title;
         document.getElementById('summary').value = resumeData.summary;
@@ -849,407 +804,283 @@
     }
   }
 
-  // exportJson function 
-function exportJson() {
-  const dataStr = JSON.stringify(resumeData, null, 2);
-  const blob = new Blob([dataStr], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'my-resume.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-// Export to PDF function
-function exportToPdf() {
-  const { name, title, contact, summary, experience, education, skills, projects, certifications, contributions, references } = resumeData;
-
-  // Contact items — show full URLs for PDF linking
-  const contactItems = [];
-  if (contact.email) contactItems.push(`📧 ${contact.email}`);
-  if (contact.phone) contactItems.push(`📱 ${contact.phone}`);
-  if (contact.website) {
-    try {
-      contactItems.push(`🌐 ${new URL(contact.website).href}`);
-    } catch {
-      contactItems.push(`🌐 ${contact.website}`);
-    }
+  // ===== EXPORTS =====
+  function exportJson() {
+    const dataStr = JSON.stringify(resumeData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'my-resume.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
-  if (contact.linkedin) {
-    try {
-      contactItems.push(`🔗 ${new URL(contact.linkedin).href}`);
-    } catch {
-      contactItems.push(`🔗 ${contact.linkedin}`);
-    }
-  }
-  const contactHtml = contactItems.length 
-    ? `<div style="text-align:center; margin-bottom:1.5rem; font-size:0.95rem; color:#64748b;">${contactItems.join(' • ')}</div>`
-    : '';
 
-  // Experience
-  const expHtml = experience.map(exp => {
-    const highlights = exp.highlights?.length 
-      ? `<ul style="margin:0.5rem 0 0 1.2rem; padding-left:0; list-style:none;">${exp.highlights.map(h => `<li style="margin-bottom:0.3rem;">• ${h}</li>`).join('')}</ul>`
+  function exportToPdf() {
+    const { name, title, contact, summary, experience, education, skills, projects, certifications, contributions, references } = resumeData;
+
+    // Contact
+    const contactItems = [];
+    if (contact.email) contactItems.push(`📧 ${contact.email}`);
+    if (contact.phone) contactItems.push(`📱 ${contact.phone}`);
+    if (contact.website) {
+      try { contactItems.push(`🌐 ${new URL(contact.website).href}`); } catch { contactItems.push(`🌐 ${contact.website}`); }
+    }
+    if (contact.linkedin) {
+      try { contactItems.push(`🔗 ${new URL(contact.linkedin).href}`); } catch { contactItems.push(`🔗 ${contact.linkedin}`); }
+    }
+    const contactHtml = contactItems.length 
+      ? `<div style="text-align:center; margin-bottom:1.5rem; font-size:0.95rem; color:#64748b;">${contactItems.join(' • ')}</div>`
       : '';
-    return `
-      <div style="margin-bottom:1.8rem; padding-left:1.2rem; border-left:2px solid #d0f0f8; position:relative;">
-        <div style="position:absolute; left:-7px; top:0; width:10px; height:10px; border-radius:50%; background:#0094bb;"></div>
-        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:0.3rem;">
-          <strong>${exp.role || ''}</strong>
-          <span style="color:#7f8c8d; font-style:italic;">${exp.duration || ''}</span>
-        </div>
-        <div style="font-weight:600; color:#1e293b; margin-bottom:0.4rem;">${exp.company || ''}</div>
-        ${highlights}
-      </div>
-    `;
-  }).join('');
 
-  // Education
-  const eduHtml = education.length ? `
-    ${education.map(edu => `
-      <div style="margin-bottom:1.8rem; padding-left:1.2rem; border-left:2px solid #d0f0f8; position:relative;">
-        <div style="position:absolute; left:-7px; top:0; width:10px; height:10px; border-radius:50%; background:#0094bb;"></div>
-        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:0.3rem;">
-          <strong>${edu.degree || ''}</strong>
-          <span style="color:#7f8c8d; font-style:italic;">${edu.duration || ''}</span>
-        </div>
-        <div style="font-weight:600; color:#1e293b; margin-bottom:0.4rem;">${edu.school || ''}</div>
-        <div>${edu.details || ''}</div>
-      </div>
-    `).join('')}
-  ` : '';
-
-  // Skills (bubbles)
-  const skillsHtml = skills.length ? `
-    <div style="margin-top:1rem;">
-      <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">Technical Skills</h3>
-      <div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.5rem;">
-        ${skills.map(skill => `<span style="background:#ecf8fc; color:#006077; padding:0.25rem 0.6rem; border-radius:20px; font-size:0.85rem; font-family:'JetBrains Mono', monospace;">${skill}</span>`).join('')}
-      </div>
-    </div>
-  ` : '';
-
-  // Projects
-  const projectsHtml = projects.length ? `
-    <section style="margin-bottom:1.8rem;">
-      <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">Projects</h3>
-      ${projects.map(proj => `
-        <div style="margin-bottom:1rem;">
-          <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:0.2rem;">
-            <strong>${proj.name}</strong>
-            ${proj.duration ? `<span style="color:#7f8c8d; font-style:italic;">${proj.duration}</span>` : ''}
+    // Experience
+    const expHtml = experience.map(exp => {
+      const highlights = exp.highlights?.length 
+        ? `<ul style="margin:0.5rem 0 0 1.2rem; padding-left:0; list-style:none;">${exp.highlights.map(h => `<li style="margin-bottom:0.3rem;">• ${h}</li>`).join('')}</ul>`
+        : '';
+      return `
+        <div style="margin-bottom:1.8rem; padding-left:1.2rem; border-left:2px solid #d0f0f8; position:relative;">
+          <div style="position:absolute; left:-7px; top:0; width:10px; height:10px; border-radius:50%; background:#0094bb;"></div>
+          <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:0.3rem;">
+            <strong>${exp.role || ''}</strong>
+            <span style="color:#7f8c8d; font-style:italic;">${exp.duration || ''}</span>
           </div>
-          ${proj.link ? `<div style="font-size:0.9rem; color:#007a99; margin-bottom:0.3rem; white-space:nowrap;"><a href="${proj.link}" style="color:#007a99;">${proj.link}</a></div>` : ''}
-          <div>${proj.description}</div>
+          <div style="font-weight:600; color:#1e293b; margin-bottom:0.4rem;">${exp.company || ''}</div>
+          ${highlights}
+        </div>
+      `;
+    }).join('');
+
+    // Education
+    const eduHtml = education.length ? `
+      ${education.map(edu => `
+        <div style="margin-bottom:1.8rem; padding-left:1.2rem; border-left:2px solid #d0f0f8; position:relative;">
+          <div style="position:absolute; left:-7px; top:0; width:10px; height:10px; border-radius:50%; background:#0094bb;"></div>
+          <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:0.3rem;">
+            <strong>${edu.degree || ''}</strong>
+            <span style="color:#7f8c8d; font-style:italic;">${edu.duration || ''}</span>
+          </div>
+          <div style="font-weight:600; color:#1e293b; margin-bottom:0.4rem;">${edu.school || ''}</div>
+          <div>${edu.details || ''}</div>
         </div>
       `).join('')}
-    </section>
-  ` : '';
+    ` : '';
 
-  // Certifications
-  const certsHtml = certifications.length ? `
-    <section style="margin-bottom:1.8rem;">
-      <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">Certifications</h3>
-      ${certifications.map(cert => `
-        <div style="margin-bottom:0.8rem;">
-          <div><strong>${cert.name}</strong> — ${cert.issuer}${cert.date ? ` (${cert.date})` : ''}</div>
-          ${cert.credentialId ? `
-            <div style="font-size:0.9rem; margin-top:0.2rem;">
-              Credential ID: 
-              ${cert.credentialId.startsWith('http') 
-                ? `<a href="${cert.credentialId}" style="color:#007a99; white-space:nowrap;">${cert.credentialId}</a>`
-                : `<span style="font-family:'JetBrains Mono', monospace;">${cert.credentialId}</span>`
-              }
+    // Skills
+    const skillsHtml = skills.length ? `
+      <div style="margin-top:1rem;">
+        <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">Technical Skills</h3>
+        <div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.5rem;">
+          ${skills.map(skill => `<span style="background:#ecf8fc; color:#006077; padding:0.25rem 0.6rem; border-radius:20px; font-size:0.85rem; font-family:'JetBrains Mono', monospace;">${skill}</span>`).join('')}
+        </div>
+      </div>
+    ` : '';
+
+    // Projects
+    const projectsHtml = projects.length ? `
+      <section style="margin-bottom:1.8rem;">
+        <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">Projects</h3>
+        ${projects.map(proj => `
+          <div style="margin-bottom:1rem;">
+            <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:0.2rem;">
+              <strong>${proj.name}</strong>
+              ${proj.duration ? `<span style="color:#7f8c8d; font-style:italic;">${proj.duration}</span>` : ''}
             </div>
-          ` : ''}
-        </div>
-      `).join('')}
-    </section>
-  ` : '';
-
-  // Contributions
-  const contribsHtml = contributions.length ? `
-    <section style="margin-bottom:1.8rem;">
-      <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">Other Contributions</h3>
-      ${contributions.map(cont => `
-        <div style="margin-bottom:1rem;">
-          <div><strong>${cont.title}</strong></div>
-          ${cont.link ? `<div style="font-size:0.9rem; color:#007a99; margin-bottom:0.3rem; white-space:nowrap;"><a href="${cont.link}" style="color:#007a99;">${cont.link}</a></div>` : ''}
-          <div>${cont.description}</div>
-        </div>
-      `).join('')}
-    </section>
-  ` : '';
-
-  // References
-  const refsHtml = references.length ? `
-    <section>
-      <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">References</h3>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:0.8rem;">
-        ${references.map(ref => `
-          <div style="padding-left:0.8rem; border-left:2px solid #d0f0f8;">
-            <div><strong>${ref.name}</strong></div>
-            <div style="font-size:0.9rem; color:#7f8c8d;">${ref.relationship}</div>
-            <div style="font-size:0.9rem;">${ref.contact}</div>
+            ${proj.link ? `<div style="font-size:0.9rem; color:#007a99; margin-bottom:0.3rem; white-space:nowrap;"><a href="${proj.link}" style="color:#007a99;">${proj.link}</a></div>` : ''}
+            <div>${proj.description}</div>
           </div>
         `).join('')}
-      </div>
-    </section>
-  ` : '';
+      </section>
+    ` : '';
 
-  // Full HTML with A4 margins + branding
-  const resumeHtml = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>${name || 'Resume'} - PDF</title>
-      <style>
-        body {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-          line-height: 1.6;
-          color: #1e293b;
-          max-width: 800px;
-          margin: 0 auto;
-          padding: 1in 0.75in; /* Top/Bottom: 1 inch, Left/Right: 0.75 inch */
-          background: white;
-        }
-        h1 {
-          font-size: 2.2rem;
-          margin-bottom: 0.3rem;
-          color: #1e293b;
-        }
-        h2, h3 {
-          font-size: 1.3rem;
-          color: #006077;
-          margin: 1.8rem 0 1rem;
-          padding-bottom: 0.4rem;
-          border-bottom: 1px solid #0094bb;
-          display: inline-block;
-        }
-        @media print {
-          body { 
-            padding: 1in 0.75in; /* Ensure consistent margins */
-            margin: 0;
+    // Certifications
+    const certsHtml = certifications.length ? `
+      <section style="margin-bottom:1.8rem;">
+        <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">Certifications</h3>
+        ${certifications.map(cert => `
+          <div style="margin-bottom:0.8rem;">
+            <div><strong>${cert.name}</strong> — ${cert.issuer}${cert.date ? ` (${cert.date})` : ''}</div>
+            ${cert.credentialId ? `
+              <div style="font-size:0.9rem; margin-top:0.2rem;">
+                Credential ID: 
+                ${cert.credentialId.startsWith('http') 
+                  ? `<a href="${cert.credentialId}" style="color:#007a99; white-space:nowrap;">${cert.credentialId}</a>`
+                  : `<span style="font-family:'JetBrains Mono', monospace;">${cert.credentialId}</span>`
+                }
+              </div>
+            ` : ''}
+          </div>
+        `).join('')}
+      </section>
+    ` : '';
+
+    // Contributions
+    const contribsHtml = contributions.length ? `
+      <section style="margin-bottom:1.8rem;">
+        <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">Other Contributions</h3>
+        ${contributions.map(cont => `
+          <div style="margin-bottom:1rem;">
+            <div><strong>${cont.title}</strong></div>
+            ${cont.link ? `<div style="font-size:0.9rem; color:#007a99; margin-bottom:0.3rem; white-space:nowrap;"><a href="${cont.link}" style="color:#007a99;">${cont.link}</a></div>` : ''}
+            <div>${cont.description}</div>
+          </div>
+        `).join('')}
+      </section>
+    ` : '';
+
+    // References
+    const refsHtml = references.length ? `
+      <section>
+        <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">References</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:0.8rem;">
+          ${references.map(ref => `
+            <div style="padding-left:0.8rem; border-left:2px solid #d0f0f8;">
+              <div><strong>${ref.name}</strong></div>
+              <div style="font-size:0.9rem; color:#7f8c8d;">${ref.relationship}</div>
+              <div style="font-size:0.9rem;">${ref.contact}</div>
+            </div>
+          `).join('')}
+        </div>
+      </section>
+    ` : '';
+
+    const resumeHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>${name || 'Resume'} - PDF</title>
+        <style>
+          body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #1e293b;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1in 0.75in;
+            background: white;
           }
-          @page { 
-            size: A4;
-            margin: 0;
+          h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.3rem;
+            color: #1e293b;
           }
-          .branding { 
-            display: block;
-            margin-top: 2rem;
-            font-size: 0.75rem;
-            color: #94a3b8;
-            text-align: center;
+          h2, h3 {
+            font-size: 1.3rem;
+            color: #006077;
+            margin: 1.8rem 0 1rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid #0094bb;
+            display: inline-block;
           }
-        }
-        @media screen {
-          .branding { display: none; }
-        }
-        a { color: #007a99; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-      </style>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    </head>
-    <body>
-      <header style="text-align:center; margin-bottom:2rem; border-bottom:1px solid #e2e8f0; padding-bottom:1.5rem;">
-        <h1>${name || 'Your Name'}</h1>
-        <p style="font-size:1.2rem; color:#007a99; margin-bottom:0.8rem;">${title || 'Your Title'}</p>
-        ${contactHtml}
-      </header>
-
-      ${summary ? `<section><h2>Professional Summary</h2><p>${summary}</p></section>` : ''}
-
-      ${experience.length ? `<section><h2>Experience</h2>${expHtml}</section>` : ''}
-
-      ${education.length ? `<section><h2>Education</h2>${eduHtml}</section>` : ''}
-
-      ${skills.length ? `<section><h2>Technical Skills</h2>${skillsHtml}</section>` : ''}
-
-      ${projectsHtml}
-
-      ${certsHtml}
-
-      ${contribsHtml}
-
-      ${refsHtml}
-
-      <div class="branding">Built with ATS ResumeBuilder • ${new Date().getFullYear()}</div>
-    </body>
-    </html>
-  `;
-
-  const printWin = window.open('', '_blank');
-  printWin.document.write(resumeHtml);
-  printWin.document.close();
-  
-  printWin.addEventListener('load', () => {
-    setTimeout(() => {
-      printWin.print();
-    }, 500);
-  });
-}
-
-// New Skills form
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function renderSkillsForm() {
-  const container = document.getElementById('skillsContainer');
-  container.innerHTML = '';
-
-  resumeData.skills.forEach((skill, i) => {
-    const div = document.createElement('div');
-    div.className = 'flex gap-2 mb-2';
-    div.innerHTML = `
-      <input type="text" 
-             data-skill-index="${i}" 
-             value="${skill || ''}" 
-             placeholder="Technical Skill (e.g., React, Python)" 
-             class="flex-1 p-2 border rounded text-sm" />
-      <button type="button" 
-              class="remove-skill text-red-600 text-sm font-medium"
-              data-skill-index="${i}">✕</button>
+          @media print {
+            body { padding: 1in 0.75in; margin: 0; }
+            @page { size: A4; margin: 0; }
+            .branding { display: block; margin-top: 2rem; font-size: 0.75rem; color: #94a3b8; text-align: center; }
+          }
+          @media screen { .branding { display: none; } }
+          a { color: #007a99; text-decoration: none; }
+          a:hover { text-decoration: underline; }
+        </style>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+      </head>
+      <body>
+        <header style="text-align:center; margin-bottom:2rem; border-bottom:1px solid #e2e8f0; padding-bottom:1.5rem;">
+          <h1>${name || 'Your Name'}</h1>
+          <p style="font-size:1.2rem; color:#007a99; margin-bottom:0.8rem;">${title || 'Your Title'}</p>
+          ${contactHtml}
+        </header>
+        ${summary ? `<section><h2>Professional Summary</h2><p>${summary}</p></section>` : ''}
+        ${experience.length ? `<section><h2>Experience</h2>${expHtml}</section>` : ''}
+        ${education.length ? `<section><h2>Education</h2>${eduHtml}</section>` : ''}
+        ${skills.length ? `<section><h2>Technical Skills</h2>${skillsHtml}</section>` : ''}
+        ${projectsHtml}
+        ${certsHtml}
+        ${contribsHtml}
+        ${refsHtml}
+        <div class="branding">Built with ResumeBuilder • ${new Date().getFullYear()}</div>
+      </body>
+      </html>
     `;
-    container.appendChild(div);
-  });
 
-  // Bind input events
-  container.querySelectorAll('input[data-skill-index]').forEach(input => {
-    input.addEventListener('input', (e) => {
-      const idx = parseInt(e.target.dataset.skillIndex);
-      resumeData.skills[idx] = e.target.value;
-      saveToLocalStorage();
-      updatePreview();
+    const printWin = window.open('', '_blank');
+    printWin.document.write(resumeHtml);
+    printWin.document.close();
+    printWin.addEventListener('load', () => {
+      setTimeout(() => { printWin.print(); }, 500);
     });
-  });
+  }
 
-  // Bind remove events
-  container.querySelectorAll('.remove-skill').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const idx = parseInt(e.target.dataset.skillIndex);
-      resumeData.skills.splice(idx, 1);
-      saveToLocalStorage();
-      renderSkillsForm();
-      updatePreview();
+  // ===== IMPORT =====
+  function setupImport() {
+    document.getElementById('importJson').addEventListener('click', () => {
+      document.getElementById('jsonFile').click();
     });
-  });
-}
 
+    document.getElementById('jsonFile').addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-// Import JSON
-function setupImport() {
-  document.getElementById('importJson').addEventListener('click', () => {
-    document.getElementById('jsonFile').click();
-  });
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if (!imported.name) throw new Error('Invalid file: "name" field is required');
 
-  document.getElementById('jsonFile').addEventListener('change', (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+          resumeData = {
+            name: imported.name || '',
+            title: imported.title || '',
+            contact: {
+              email: imported.contact?.email || '',
+              phone: imported.contact?.phone || '',
+              website: imported.contact?.website || '',
+              linkedin: imported.contact?.linkedin || ''
+            },
+            summary: imported.summary || '',
+            experience: Array.isArray(imported.experience) ? imported.experience : [],
+            education: Array.isArray(imported.education) ? imported.education : [],
+            skills: Array.isArray(imported.skills) ? imported.skills : [],
+            projects: Array.isArray(imported.projects) ? imported.projects : [],
+            certifications: Array.isArray(imported.certifications) ? imported.certifications : [],
+            contributions: Array.isArray(imported.contributions) ? imported.contributions : [],
+            references: Array.isArray(imported.references) ? imported.references : []
+          };
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const imported = JSON.parse(event.target.result);
+          // Update form fields
+          document.getElementById('name').value = resumeData.name;
+          document.getElementById('title').value = resumeData.title;
+          document.getElementById('summary').value = resumeData.summary;
+          document.getElementById('email').value = resumeData.contact.email;
+          document.getElementById('phone').value = resumeData.contact.phone;
+          document.getElementById('website').value = resumeData.contact.website;
+          document.getElementById('linkedin').value = resumeData.contact.linkedin;
 
-        // Validate required field
-        if (!imported.name) {
-          throw new Error('Invalid file: "name" field is required');
+          // Re-render all sections
+          renderExperienceForm();
+          renderEducationForm();
+          renderSkillsForm();
+          renderProjectsForm();
+          renderCertificationsForm();
+          renderContributionsForm();
+          renderReferencesForm();
+
+          saveToLocalStorage();
+          updatePreview();
+          alert('✅ Resume imported successfully!');
+        } catch (err) {
+          console.error('Import failed:', err);
+          alert(`❌ Import failed: ${err.message}`);
+        } finally {
+          e.target.value = '';
         }
+      };
+      reader.readAsText(file);
+    });
+  }
 
-        // Safely merge with default structure
-        resumeData = {
-          name: imported.name || '',
-          title: imported.title || '',
-          contact: {
-            email: imported.contact?.email || '',
-            phone: imported.contact?.phone || '',
-            website: imported.contact?.website || '',
-            linkedin: imported.contact?.linkedin || ''
-          },
-          summary: imported.summary || '',
-          experience: Array.isArray(imported.experience) ? imported.experience : [],
-          education: Array.isArray(imported.education) ? imported.education : [],
-          skills: Array.isArray(imported.skills) ? imported.skills : []
-        };
-
-        // Update form fields
-        document.getElementById('name').value = resumeData.name;
-        document.getElementById('title').value = resumeData.title;
-        document.getElementById('summary').value = resumeData.summary;
-        
-        document.getElementById('email').value = resumeData.contact.email;
-        document.getElementById('phone').value = resumeData.contact.phone;
-        document.getElementById('website').value = resumeData.contact.website;
-        document.getElementById('linkedin').value = resumeData.contact.linkedin;
-        
-        renderSkillsForm();
-
-        renderExperienceForm();
-        renderEducationForm();
-        saveToLocalStorage();
-        updatePreview();
-        alert('✅ Resume imported successfully!');
-      } catch (err) {
-        console.error('Import failed:', err);
-        alert(`❌ Import failed: ${err.message}`);
-      } finally {
-        // Reset file input
-        e.target.value = '';
-      }
-    };
-    reader.readAsText(file);
-  });
-}
-
-// Clear all data
-function clearAllData() {
-  if (!confirm('⚠️ Are you sure? This will clear all resume data.')) return;
-
-  resumeData = {
-    name: "",
-    title: "",
-    contact: { email: "", phone: "", website: "", linkedin: "" },
-    summary: "",
-    experience: [],
-    education: [],
-    skills: [],
-    projects: [],
-    certifications: [],
-    contributions: [],
-    references: []
-  };
-
-  // Clear top fields
-  document.getElementById('name').value = '';
-  document.getElementById('title').value = '';
-  document.getElementById('summary').value = '';
-  document.getElementById('email').value = '';
-  document.getElementById('phone').value = '';
-  document.getElementById('website').value = '';
-  document.getElementById('linkedin').value = '';
-
-  // Re-render all sections
-  renderExperienceForm();
-  renderEducationForm();
-  renderSkillsForm();
-  renderProjectsForm();
-  renderCertificationsForm();
-  renderContributionsForm();
-  renderReferencesForm();
-
-  updatePreview();
-  saveToLocalStorage();
-  alert('✅ All fields cleared!');
-}
-
+  // ===== SAVE TO BACKEND =====
   async function saveToBackend() {
     if (!resumeData.name) {
       alert('Please enter your name first.');
@@ -1274,6 +1105,6 @@ function clearAllData() {
 
   // Start
   init();
-</script>
+  </script>
 </body>
 </html>
