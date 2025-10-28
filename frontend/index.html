@@ -118,10 +118,12 @@
       </div>
 
       <!-- Live Preview -->
-      <div id="previewPane" class="bg-white p-6 rounded-lg shadow">
+      <div id="previewPane" class="bg-white p-6 rounded-lg shadow relative">
         <div id="resumePreview" class="preview-mode"></div>
+        <button id="backToTop" class="absolute bottom-4 right-4 px-3 py-2 bg-primary-600 text-white rounded shadow hover:bg-primary-700 text-sm">
+          ↑ Top
+        </button>
       </div>
-    </div>
 
     <!-- Preview-Only View (your original resume) -->
     <div id="previewView" class="hidden">
@@ -164,6 +166,13 @@
     bindEvents();
     loadFromLocalStorage();
     updatePreview();
+    // ✅ Add Back to Top button listener
+    const backToTopBtn = document.getElementById('backToTop');
+    if (backToTopBtn) {
+      backToTopBtn.addEventListener('click', () => {
+        document.getElementById('previewPane')?.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
   }
 
   function bindEvents() {
@@ -605,7 +614,13 @@
       }
     }
     if (contact.linkedin) {
-      contactItems.push(`🔗 <a href="${contact.linkedin}" target="_blank" class="text-primary-600 hover:underline">LinkedIn</a>`);
+      try {
+        const linkedinUrl = new URL(contact.linkedin);
+        const display = linkedinUrl.hostname + linkedinUrl.pathname;
+        contactItems.push(`🔗 <a href="${contact.linkedin}" target="_blank" class="text-primary-600 hover:underline">${display}</a>`);
+      } catch {
+        contactItems.push(`🔗 <a href="${contact.linkedin}" target="_blank" class="text-primary-600 hover:underline">${contact.linkedin}</a>`);
+      }
     }
     const contactHtml = contactItems.length 
       ? `<div class="flex flex-wrap justify-center gap-3 text-sm text-slate">${contactItems.map(item => `<span>${item}</span>`).join('')}</div>`
@@ -644,14 +659,13 @@
       `).join('')}
     ` : '';
 
-    // Skills
+    // Skills (bubbles)
     const skillsHtml = skills.length ? `
       <div class="flex flex-wrap gap-2 mt-2">
         ${skills.map(skill => `<span class="px-2.5 py-1 bg-primary-50 text-primary-700 rounded text-sm font-mono">${skill}</span>`).join('')}
       </div>
     ` : '';
 
-    // ✅ Define new sections BEFORE previewHtml
     // Projects
     const projectsHtml = projects.length ? `
       <section class="mb-6">
@@ -715,7 +729,7 @@
       </section>
     ` : '';
 
-    // ✅ NOW use all variables safely
+    // ✅ NOW build previewHtml AFTER all sections are defined
     const previewHtml = `
       <header class="text-center mb-8">
         <h1 class="text-3xl font-bold mb-2">${name || 'Your Name'}</h1>
@@ -851,26 +865,31 @@ function exportJson() {
 
 // Export to PDF function
 function exportToPdf() {
-  const { name, title, contact, summary, experience, education, skills } = resumeData;
+  const { name, title, contact, summary, experience, education, skills, projects, certifications, contributions, references } = resumeData;
 
-  // Build contact items (plain text for PDF)
+  // Contact items — show full URLs for PDF linking
   const contactItems = [];
   if (contact.email) contactItems.push(`📧 ${contact.email}`);
   if (contact.phone) contactItems.push(`📱 ${contact.phone}`);
   if (contact.website) {
     try {
-      contactItems.push(`🌐 ${new URL(contact.website).hostname}`);
+      contactItems.push(`🌐 ${new URL(contact.website).href}`);
     } catch {
       contactItems.push(`🌐 ${contact.website}`);
     }
   }
-  if (contact.linkedin) contactItems.push(`🔗 LinkedIn`);
-
+  if (contact.linkedin) {
+    try {
+      contactItems.push(`🔗 ${new URL(contact.linkedin).href}`);
+    } catch {
+      contactItems.push(`🔗 ${contact.linkedin}`);
+    }
+  }
   const contactHtml = contactItems.length 
     ? `<div style="text-align:center; margin-bottom:1.5rem; font-size:0.95rem; color:#64748b;">${contactItems.join(' • ')}</div>`
     : '';
 
-  // Experience section
+  // Experience
   const expHtml = experience.map(exp => {
     const highlights = exp.highlights?.length 
       ? `<ul style="margin:0.5rem 0 0 1.2rem; padding-left:0; list-style:none;">${exp.highlights.map(h => `<li style="margin-bottom:0.3rem;">• ${h}</li>`).join('')}</ul>`
@@ -888,7 +907,7 @@ function exportToPdf() {
     `;
   }).join('');
 
-  // Education section
+  // Education
   const eduHtml = education.length ? `
     ${education.map(edu => `
       <div style="margin-bottom:1.8rem; padding-left:1.2rem; border-left:2px solid #d0f0f8; position:relative;">
@@ -903,7 +922,7 @@ function exportToPdf() {
     `).join('')}
   ` : '';
 
-  // Skills section
+  // Skills (bubbles)
   const skillsHtml = skills.length ? `
     <div style="margin-top:1rem;">
       <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">Technical Skills</h3>
@@ -913,7 +932,75 @@ function exportToPdf() {
     </div>
   ` : '';
 
-  // Full HTML document
+  // Projects
+  const projectsHtml = projects.length ? `
+    <section style="margin-bottom:1.8rem;">
+      <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">Projects</h3>
+      ${projects.map(proj => `
+        <div style="margin-bottom:1rem;">
+          <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:0.2rem;">
+            <strong>${proj.name}</strong>
+            ${proj.duration ? `<span style="color:#7f8c8d; font-style:italic;">${proj.duration}</span>` : ''}
+          </div>
+          ${proj.link ? `<div style="font-size:0.9rem; color:#007a99; margin-bottom:0.3rem; white-space:nowrap;"><a href="${proj.link}" style="color:#007a99;">${proj.link}</a></div>` : ''}
+          <div>${proj.description}</div>
+        </div>
+      `).join('')}
+    </section>
+  ` : '';
+
+  // Certifications
+  const certsHtml = certifications.length ? `
+    <section style="margin-bottom:1.8rem;">
+      <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">Certifications</h3>
+      ${certifications.map(cert => `
+        <div style="margin-bottom:0.8rem;">
+          <div><strong>${cert.name}</strong> — ${cert.issuer}${cert.date ? ` (${cert.date})` : ''}</div>
+          ${cert.credentialId ? `
+            <div style="font-size:0.9rem; margin-top:0.2rem;">
+              Credential ID: 
+              ${cert.credentialId.startsWith('http') 
+                ? `<a href="${cert.credentialId}" style="color:#007a99; white-space:nowrap;">${cert.credentialId}</a>`
+                : `<span style="font-family:'JetBrains Mono', monospace;">${cert.credentialId}</span>`
+              }
+            </div>
+          ` : ''}
+        </div>
+      `).join('')}
+    </section>
+  ` : '';
+
+  // Contributions
+  const contribsHtml = contributions.length ? `
+    <section style="margin-bottom:1.8rem;">
+      <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">Other Contributions</h3>
+      ${contributions.map(cont => `
+        <div style="margin-bottom:1rem;">
+          <div><strong>${cont.title}</strong></div>
+          ${cont.link ? `<div style="font-size:0.9rem; color:#007a99; margin-bottom:0.3rem; white-space:nowrap;"><a href="${cont.link}" style="color:#007a99;">${cont.link}</a></div>` : ''}
+          <div>${cont.description}</div>
+        </div>
+      `).join('')}
+    </section>
+  ` : '';
+
+  // References
+  const refsHtml = references.length ? `
+    <section>
+      <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">References</h3>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:0.8rem;">
+        ${references.map(ref => `
+          <div style="padding-left:0.8rem; border-left:2px solid #d0f0f8;">
+            <div><strong>${ref.name}</strong></div>
+            <div style="font-size:0.9rem; color:#7f8c8d;">${ref.relationship}</div>
+            <div style="font-size:0.9rem;">${ref.contact}</div>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+  ` : '';
+
+  // Full HTML with A4 margins + branding
   const resumeHtml = `
     <!DOCTYPE html>
     <html>
@@ -927,7 +1014,7 @@ function exportToPdf() {
           color: #1e293b;
           max-width: 800px;
           margin: 0 auto;
-          padding: 2rem 1.5rem;
+          padding: 1in 0.75in; /* Top/Bottom: 1 inch, Left/Right: 0.75 inch */
           background: white;
         }
         h1 {
@@ -935,18 +1022,36 @@ function exportToPdf() {
           margin-bottom: 0.3rem;
           color: #1e293b;
         }
-        h2 {
+        h2, h3 {
           font-size: 1.3rem;
-          color: #006077; /* primary-700 */
+          color: #006077;
           margin: 1.8rem 0 1rem;
           padding-bottom: 0.4rem;
-          border-bottom: 1px solid #0094bb; /* primary-500 */
+          border-bottom: 1px solid #0094bb;
           display: inline-block;
         }
         @media print {
-          body { padding: 0; }
-          @page { margin: 0.5in; }
+          body { 
+            padding: 1in 0.75in; /* Ensure consistent margins */
+            margin: 0;
+          }
+          @page { 
+            size: A4;
+            margin: 0;
+          }
+          .branding { 
+            display: block;
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-align: center;
+          }
         }
+        @media screen {
+          .branding { display: none; }
+        }
+        a { color: #007a99; text-decoration: none; }
+        a:hover { text-decoration: underline; }
       </style>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     </head>
@@ -957,38 +1062,27 @@ function exportToPdf() {
         ${contactHtml}
       </header>
 
-      ${summary ? `
-        <section>
-          <h2>Professional Summary</h2>
-          <p>${summary}</p>
-        </section>
-      ` : ''}
+      ${summary ? `<section><h2>Professional Summary</h2><p>${summary}</p></section>` : ''}
 
-      ${experience.length ? `
-        <section>
-          <h2>Experience</h2>
-          ${expHtml}
-        </section>
-      ` : ''}
+      ${experience.length ? `<section><h2>Experience</h2>${expHtml}</section>` : ''}
 
-      ${education.length ? `
-        <section>
-          <h2>Education</h2>
-          ${eduHtml}
-        </section>
-      ` : ''}
+      ${education.length ? `<section><h2>Education</h2>${eduHtml}</section>` : ''}
 
-      ${skills.length ? `
-        <section>
-          <h2>Technical Skills</h2>
-          ${skillsHtml}
-        </section>
-      ` : ''}
+      ${skills.length ? `<section><h2>Technical Skills</h2>${skillsHtml}</section>` : ''}
+
+      ${projectsHtml}
+
+      ${certsHtml}
+
+      ${contribsHtml}
+
+      ${refsHtml}
+
+      <div class="branding">Built with ATS ResumeBuilder • ${new Date().getFullYear()}</div>
     </body>
     </html>
   `;
 
-  // Open and print
   const printWin = window.open('', '_blank');
   printWin.document.write(resumeHtml);
   printWin.document.close();
@@ -1012,14 +1106,13 @@ function renderSkillsForm() {
   container.innerHTML = '';
 
   resumeData.skills.forEach((skill, i) => {
-    const safeValue = escapeHtml(skill || ''); // Prevent HTML injection & breakage
     const div = document.createElement('div');
-    div.className = 'flex gap-2';
+    div.className = 'flex gap-2 mb-2';
     div.innerHTML = `
       <input type="text" 
              data-skill-index="${i}" 
-             value="${safeValue}" 
-             placeholder="Skill (e.g., React, Python)" 
+             value="${skill || ''}" 
+             placeholder="Technical Skill (e.g., React, Python)" 
              class="flex-1 p-2 border rounded text-sm" />
       <button type="button" 
               class="remove-skill text-red-600 text-sm font-medium"
@@ -1028,7 +1121,7 @@ function renderSkillsForm() {
     container.appendChild(div);
   });
 
-  // Rebind events
+  // Bind input events
   container.querySelectorAll('input[data-skill-index]').forEach(input => {
     input.addEventListener('input', (e) => {
       const idx = parseInt(e.target.dataset.skillIndex);
@@ -1038,6 +1131,7 @@ function renderSkillsForm() {
     });
   });
 
+  // Bind remove events
   container.querySelectorAll('.remove-skill').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const idx = parseInt(e.target.dataset.skillIndex);

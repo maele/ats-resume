@@ -1,35 +1,106 @@
 {
-  "name": "John Doe",
-  "title": "Builder",
+  "name": "Maele 'Neko",
+  "title": "Chief Technology Officer & Managing Director",
   "contact": {
-    "email": "john.doe@example.com",
-    "phone": "+1 (555) 123-4567",
-    "website": "johndoe.com",
-    "linkedin": "https://linkedin.com/in/johndoe"
+    "email": "maele@nalaneindustries.co.za",
+    "phone": "(+266) 5977 5614",
+    "website": "www.nalaneindustries.co.za",
+    "linkedin": "www.linkedin.com/in/maele"
   },
-  "summary": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim aeque doleamus animo, cum corpore dolemus, fieri tamen permagna accessio potest, si aliquod aeternum et infinitum impendere malum nobis opinemur. Quod idem licet transferre in voluptatem, ut postea variari voluptas distinguique possit, augeri amplificarique non possit. At etiam Athenis, ut e patre audiebam facete.",
+  "summary": "IT professional with 14+ years\u2019 experience in software, DevOps, UI/UX design, networking, and data analytics; delivering innovative solutions that drive growth and e\ufb03ciency.",
   "experience": [
     {
-      "role": "Project manager",
+      "role": "Senior Software Engineer, CTO & Managing Director",
       "company": "Nalane Industries",
-      "duration": "January 2025 - October 2025",
+      "duration": "September 2017 - present",
       "highlights": [
-        "Te ne Graecis quidem cedentem in philosophia audeam scribere?",
-        "Quamquam a te ipso id quidem licebit iis existimare, qui legerint",
-        "Nos autem hanc omnem quaestionem de finibus bonorum et malorum"
+        "I build responsive and user-friendly web interfaces using HTML and CSS, while leveraging modern frameworks such as React, Tailwind CSS, and Vue.js to create dynamic, scalable, and visually engaging applications. My focus is on delivering seamless user experiences across devices, ensuring that websites and applications are both performant and accessible. In addition to clean, maintainable code, I emphasize best practices in design systems, component reusability, and cross-browser compatibility, allowing projects to grow e\ufb03ciently while maintaining a polished look and feel. I develop scalable and e\ufb03cient backend applications and APIs using Node.js, Python (Flask, Django), and PHP. My work emphasizes secure data handling, optimized performance, and reliable integration with front-end systems, ensuring smooth communication across platforms. I also design database structures, manage server-side logic, and implement best practices that support maintainability and future growth of applications.",
+        "I design and optimize SQL and NoSQL databases (MySQL, PostgreSQL, SQLite, MongoDB), ensuring e\ufb03cient schemas, queries, and data integrity. I implement robust security and backup measures, monitor performance, and \ufb01ne-tune systems for reliability, scalability, and maintainability.",
+        "I integrate third-party APIs, manage code with Git, and deploy via CI/CD on AWS, Azure, Render, Netlify, Vercel or Heroku.",
+        "I integrate APIs and implement AI solutions, including FastAPI, NLP, recommendation engines, and predictive analytics, for intelligent, data-driven experiences.",
+        "As Chief Technology O\ufb03cer and Managing Director, I am responsible for de\ufb01ning and executing the company\u2019s overall strategic direction while leading its technological vision and innovation agenda. I oversee the development and deployment of secure, scalable, and future-focused IT solutions that strengthen our competitive position and deliver value to clients. In parallel, I provide executive leadership across all business functions, driving growth, forging strategic partnerships, and ensuring operational excellence. By integrating technology leadership with corporate governance, I ensure the company remains agile, sustainable, and aligned with its long-term objectives."
+      ]
+    },
+    {
+      "role": "Web developer, Graphic Designer & Chief Operating O\ufb03cer",
+      "company": "Nalane Holdings",
+      "duration": "April 2015 - present",
+      "highlights": [
+        "I develop and maintain responsive web applications with HTML, CSS, JavaScript, PHP, and frameworks like Bootstrap and Vue.js, integrating APIs, optimizing performance and SEO, enforcing security best practices, managing code via Git/GitLab, and staying current with emerging web technologies.",
+        "I conceptualize, produce and supervise all UI/UX work for clients; these include (but are not limited to) website mock-ups, product wire-frames, digital products prototypes. I also create web and print media graphics for clients as per speci\ufb01cations.",
+        "I oversee the daily operations that keep the business running smoothly, from managing project delivery and client support to ensuring our infrastructure and systems are reliable and secure. I work closely with my colleagues to streamline work\ufb02ows, allocate resources effectively, and implement strategies that align with our long-term goals. My role also involves monitoring performance metrics, driving operational e\ufb03ciency, and making sure our teams deliver high-quality solutions on time and within budget, all while adapting quickly to the fast-changing technology landscape."
+      ]
+    },
+    {
+      "role": "Graphic designer & Webmaster",
+      "company": "The Silo Newspaper",
+      "duration": "February 2011 - March 2015",
+      "highlights": [
+        "Designed layouts, graphics, and visual content for print and digital editions.",
+        "Maintained and updated the newspaper\u2019s website, ensuring accuracy and visual appeal.",
+        "Collaborated with editors and journalists to align visuals with content.",
+        "Designed newspaper website.",
+        "Optimized web pages for performance, responsiveness, and accessibility.",
+        "Managed image libraries, photo editing, and multimedia assets.",
+        "Ensured brand consistency across all print and digital materials.",
+        "Monitored website performance and resolved technical issues."
+      ]
+    },
+    {
+      "role": "Sub-editor",
+      "company": "The Silo Magazine",
+      "duration": "May 2011 - March 2015",
+      "highlights": [
+        "Edited and proofread articles for grammar, clarity, and style, ensuring alignment with editorial standards.",
+        "Veri\ufb01ed facts, statistics, and sources.",
+        "Wrote engaging headlines, captions, and subheadings.",
+        "Collaborated with journalists and photographers to re\ufb01ne content.",
+        "Formatted articles for print and digital editions, including charts and images.",
+        "Ensured legal, ethical, and copyright compliance.",
+        "Maintained style guides and agriculture-speci\ufb01c terminology.",
+        "Assisted in content planning, special features, and thematic issues.",
+        "Monitored reader feedback and ensured timely, relevant coverage."
       ]
     }
   ],
-  "education": {
-    "degree": "Diploma in Construction management",
-    "school": "Fokothi",
-    "duration": "2022 - 2024",
-    "details": "Honours"
-  },
+  "education": [
+    {
+      "degree": "BSc Mathematics and Statistics",
+      "school": "University of South Africa",
+      "duration": "",
+      "details": "Studies on hold"
+    }
+  ],
   "skills": [
-    "building",
-    "architecture",
-    "roofing",
-    "quantity surveying"
+    "Executive leadership",
+    "Strategic planning",
+    "work\ufb02ow optimization",
+    "operational e\ufb03ciency",
+    "Project management",
+    "team oversight",
+    "client support",
+    "Web & Frontend Development",
+    "UI/UX design",
+    "Cross-browser compatibility, accessibility, and performance optimization",
+    "SEO best practices and user-friendly interface design",
+    "Backend development",
+    "API development, integration, and deployment",
+    "Server-side logic, database design, and system maintainability",
+    "CI/CD deployment",
+    "SQL/NoSQL database design and optimization",
+    "Query optimization, indexing, and schema design",
+    "Data integrity, security, backup, and performance monitoring",
+    "Data visualization and analysis",
+    "AI/ML applications including NLP, recommendation engines, and predictive analytics",
+    "Python for data science and development",
+    "Git/GitLab version control and collaborative work\ufb02ows",
+    "Deployment and infrastructure management in cloud environments",
+    "Graphic design for print and digital publications",
+    "Website design, updates, and performance optimization",
+    "Multimedia asset management and visual content alignment with editorial content",
+    "Brand consistency across platforms",
+    "Article editing, proofreading, and fact-checking",
+    "Maintaining style guides and ensuring copyright and ethical compliance",
+    "Content formatting for print and digital media"
   ]
 }
