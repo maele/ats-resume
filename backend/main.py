@@ -5,13 +5,19 @@ from pydantic import BaseModel
 from typing import List, Optional
 import json
 import os
+from pathlib import Path
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-RESUME_PATH = os.path.join(DATA_DIR, "resume.json")
+# --- PATH CONFIGURATION ---
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR / "backend" / "data"
+RESUME_PATH = DATA_DIR / "resume.json"
+FRONTEND_DIR = BASE_DIR / "frontend"
 
-os.makedirs(DATA_DIR, exist_ok=True)
+# Ensure data directory exists
+DATA_DIR.mkdir(exist_ok=True)
 
-if not os.path.exists(RESUME_PATH):
+# Create default resume.json if missing
+if not RESUME_PATH.exists():
     with open(RESUME_PATH, "w") as f:
         json.dump({
             "name": "Your Name",
@@ -23,6 +29,7 @@ if not os.path.exists(RESUME_PATH):
             "skills": []
         }, f)
 
+# --- FASTAPI SETUP ---
 app = FastAPI(title="Resume API")
 
 app.add_middleware(
@@ -33,6 +40,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# --- PYDANTIC MODELS ---
 class ContactInfo(BaseModel):
     email: str
     phone: str
@@ -60,6 +68,7 @@ class ResumeData(BaseModel):
     education: List[EducationInfo]
     skills: List[str]
 
+# --- API ROUTES ---
 @app.get("/api/resume", response_model=ResumeData)
 async def get_resume():
     try:
@@ -77,4 +86,8 @@ async def update_resume(resume: ResumeData):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
+# --- SERVE FRONTEND ---
+if not FRONTEND_DIR.exists():
+    print(f"⚠️ Warning: Frontend not found at {FRONTEND_DIR}")
+else:
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
