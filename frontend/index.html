@@ -15,7 +15,7 @@
             mono: ['JetBrains Mono', 'monospace'],
           },
           colors: {
-            primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+            primary: { 50: '#ecf8fc', 100: '#d0f0f8', 500: '#0094bb', 600: '#007a99', 700: '#006077' },
             dark: '#1e293b',
             slate: '#64748b',
           }
@@ -217,26 +217,96 @@
     resumeData.experience.forEach((exp, i) => {
       const div = document.createElement('div');
       div.className = 'border p-3 mb-3 rounded bg-gray-50';
+
+      // Render achievement inputs
+      const achievementsHtml = (exp.highlights || []).map((ach, aIdx) => `
+        <div class="flex gap-2 mb-2">
+          <input type="text" 
+                data-exp-index="${i}" 
+                data-ach-index="${aIdx}" 
+                value="${ach}" 
+                placeholder="Achievement" 
+                class="flex-1 p-2 border rounded text-sm" />
+          <button type="button" 
+                  class="remove-achievement text-red-600 text-sm font-medium"
+                  data-exp-index="${i}" 
+                  data-ach-index="${aIdx}">✕</button>
+        </div>
+      `).join('');
+
       div.innerHTML = `
         <input type="text" data-index="${i}" data-field="role" value="${exp.role || ''}" placeholder="Job Title" class="w-full p-2 mb-2 border rounded" />
         <input type="text" data-index="${i}" data-field="company" value="${exp.company || ''}" placeholder="Company • Location" class="w-full p-2 mb-2 border rounded" />
         <input type="text" data-index="${i}" data-field="duration" value="${exp.duration || ''}" placeholder="Duration (e.g., Jan 2020 – Present)" class="w-full p-2 mb-2 border rounded" />
-        <textarea data-index="${i}" data-field="highlights" placeholder="Achievements (one per line)" class="w-full p-2 border rounded" rows="3">${(exp.highlights || []).join('\n')}</textarea>
-        <button type="button" class="mt-2 text-red-600 text-sm remove-exp" data-index="${i}">Remove</button>
+        
+        <div class="mt-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Key Achievements</label>
+          <div class="space-y-2" id="achievements-${i}">
+            ${achievementsHtml}
+          </div>
+          <button type="button" class="mt-2 text-sm text-primary-600 hover:underline add-achievement" data-exp-index="${i}">+ Add Achievement</button>
+        </div>
+        
+        <button type="button" class="mt-3 text-red-600 text-sm remove-exp" data-index="${i}">Remove Experience</button>
       `;
       experienceItems.appendChild(div);
     });
 
-    experienceItems.querySelectorAll('input, textarea').forEach(el => {
+    // Bind events for experience fields (role, company, duration)
+    experienceItems.querySelectorAll('input[data-field]').forEach(el => {
       el.addEventListener('input', handleExperienceInput);
     });
 
+    // Bind "Remove Experience"
     experienceItems.querySelectorAll('.remove-exp').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const index = parseInt(e.target.dataset.index);
         resumeData.experience.splice(index, 1);
         saveToLocalStorage();
         renderExperienceForm();
+        updatePreview();
+      });
+    });
+
+    // Bind "Add Achievement"
+    experienceItems.querySelectorAll('.add-achievement').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const expIndex = parseInt(e.target.dataset.expIndex);
+        if (!resumeData.experience[expIndex].highlights) {
+          resumeData.experience[expIndex].highlights = [];
+        }
+        resumeData.experience[expIndex].highlights.push('');
+        saveToLocalStorage();
+        renderExperienceForm();
+        updatePreview();
+      });
+    });
+
+    // Bind "Remove Achievement"
+    experienceItems.querySelectorAll('.remove-achievement').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const expIndex = parseInt(e.target.dataset.expIndex);
+        const achIndex = parseInt(e.target.dataset.achIndex);
+        resumeData.experience[expIndex].highlights.splice(achIndex, 1);
+        saveToLocalStorage();
+        renderExperienceForm();
+        updatePreview();
+      });
+    });
+
+    // Bind input for achievement fields
+    experienceItems.querySelectorAll('input[data-ach-index]').forEach(input => {
+      input.addEventListener('input', (e) => {
+        const expIndex = parseInt(e.target.dataset.expIndex);
+        const achIndex = parseInt(e.target.dataset.achIndex);
+        const value = e.target.value;
+        
+        if (!resumeData.experience[expIndex].highlights) {
+          resumeData.experience[expIndex].highlights = [];
+        }
+        resumeData.experience[expIndex].highlights[achIndex] = value;
+        
+        saveToLocalStorage();
         updatePreview();
       });
     });
@@ -250,15 +320,7 @@
     if (!resumeData.experience[index]) {
       resumeData.experience[index] = { highlights: [] };
     }
-
-    if (field === 'highlights') {
-      resumeData.experience[index].highlights = value
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line !== '');
-    } else {
-      resumeData.experience[index][field] = value;
-    }
+    resumeData.experience[index][field] = value;
 
     saveToLocalStorage();
     updatePreview();
@@ -481,10 +543,9 @@ function exportJson() {
 
 // Export to PDF function
 function exportToPdf() {
-  // Generate clean resume HTML (same as preview but print-optimized)
   const { name, title, contact, summary, experience, education, skills } = resumeData;
 
-  // Build contact
+  // Build contact items (plain text for PDF)
   const contactItems = [];
   if (contact.email) contactItems.push(`📧 ${contact.email}`);
   if (contact.phone) contactItems.push(`📱 ${contact.phone}`);
@@ -501,50 +562,50 @@ function exportToPdf() {
     ? `<div style="text-align:center; margin-bottom:1.5rem; font-size:0.95rem; color:#64748b;">${contactItems.join(' • ')}</div>`
     : '';
 
-  // Experience
+  // Experience section
   const expHtml = experience.map(exp => {
     const highlights = exp.highlights?.length 
       ? `<ul style="margin:0.5rem 0 0 1.2rem; padding-left:0; list-style:none;">${exp.highlights.map(h => `<li style="margin-bottom:0.3rem;">• ${h}</li>`).join('')}</ul>`
       : '';
     return `
-      <div style="margin-bottom:1.8rem; padding-left:1.2rem; border-left:2px solid #dbeafe; position:relative;">
-        <div style="position:absolute; left:-7px; top:0; width:10px; height:10px; border-radius:50%; background:#3b82f6;"></div>
+      <div style="margin-bottom:1.8rem; padding-left:1.2rem; border-left:2px solid #d0f0f8; position:relative;">
+        <div style="position:absolute; left:-7px; top:0; width:10px; height:10px; border-radius:50%; background:#0094bb;"></div>
         <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:0.3rem;">
           <strong>${exp.role || ''}</strong>
           <span style="color:#7f8c8d; font-style:italic;">${exp.duration || ''}</span>
         </div>
-        <div style="font-weight:600; color:#2c3e50; margin-bottom:0.4rem;">${exp.company || ''}</div>
+        <div style="font-weight:600; color:#1e293b; margin-bottom:0.4rem;">${exp.company || ''}</div>
         ${highlights}
       </div>
     `;
   }).join('');
 
-  // Education
+  // Education section
   const eduHtml = education.length ? `
     ${education.map(edu => `
-      <div style="margin-bottom:1.8rem; padding-left:1.2rem; border-left:2px solid #dbeafe; position:relative;">
-        <div style="position:absolute; left:-7px; top:0; width:10px; height:10px; border-radius:50%; background:#3b82f6;"></div>
+      <div style="margin-bottom:1.8rem; padding-left:1.2rem; border-left:2px solid #d0f0f8; position:relative;">
+        <div style="position:absolute; left:-7px; top:0; width:10px; height:10px; border-radius:50%; background:#0094bb;"></div>
         <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:0.3rem;">
           <strong>${edu.degree || ''}</strong>
           <span style="color:#7f8c8d; font-style:italic;">${edu.duration || ''}</span>
         </div>
-        <div style="font-weight:600; color:#2c3e50; margin-bottom:0.4rem;">${edu.school || ''}</div>
+        <div style="font-weight:600; color:#1e293b; margin-bottom:0.4rem;">${edu.school || ''}</div>
         <div>${edu.details || ''}</div>
       </div>
     `).join('')}
   ` : '';
 
-  // Skills
+  // Skills section
   const skillsHtml = skills.length ? `
     <div style="margin-top:1rem;">
-      <h3 style="font-size:1.2rem; color:#2563eb; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #3b82f6; display:inline-block;">Technical Skills</h3>
+      <h3 style="font-size:1.2rem; color:#006077; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #0094bb; display:inline-block;">Technical Skills</h3>
       <div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.5rem;">
-        ${skills.map(skill => `<span style="background:#eff6ff; padding:0.25rem 0.6rem; border-radius:20px; font-size:0.85rem; font-family:'JetBrains Mono', monospace;">${skill}</span>`).join('')}
+        ${skills.map(skill => `<span style="background:#ecf8fc; color:#006077; padding:0.25rem 0.6rem; border-radius:20px; font-size:0.85rem; font-family:'JetBrains Mono', monospace;">${skill}</span>`).join('')}
       </div>
     </div>
   ` : '';
 
-  // Full resume HTML
+  // Full HTML document
   const resumeHtml = `
     <!DOCTYPE html>
     <html>
@@ -561,8 +622,19 @@ function exportToPdf() {
           padding: 2rem 1.5rem;
           background: white;
         }
-        h1 { font-size: 2.2rem; margin-bottom: 0.3rem; color: #1e293b; }
-        h2 { font-size: 1.3rem; color: #2563eb; margin: 1.8rem 0 1rem; padding-bottom: 0.4rem; border-bottom: 1px solid #3b82f6; display: inline-block; }
+        h1 {
+          font-size: 2.2rem;
+          margin-bottom: 0.3rem;
+          color: #1e293b;
+        }
+        h2 {
+          font-size: 1.3rem;
+          color: #006077; /* primary-700 */
+          margin: 1.8rem 0 1rem;
+          padding-bottom: 0.4rem;
+          border-bottom: 1px solid #0094bb; /* primary-500 */
+          display: inline-block;
+        }
         @media print {
           body { padding: 0; }
           @page { margin: 0.5in; }
@@ -573,7 +645,7 @@ function exportToPdf() {
     <body>
       <header style="text-align:center; margin-bottom:2rem; border-bottom:1px solid #e2e8f0; padding-bottom:1.5rem;">
         <h1>${name || 'Your Name'}</h1>
-        <p style="font-size:1.2rem; color:#2563eb; margin-bottom:0.8rem;">${title || 'Your Title'}</p>
+        <p style="font-size:1.2rem; color:#007a99; margin-bottom:0.8rem;">${title || 'Your Title'}</p>
         ${contactHtml}
       </header>
 
@@ -608,17 +680,14 @@ function exportToPdf() {
     </html>
   `;
 
-  // Open in new tab and trigger print
+  // Open and print
   const printWin = window.open('', '_blank');
   printWin.document.write(resumeHtml);
   printWin.document.close();
   
-  // Wait for fonts to load, then print
   printWin.addEventListener('load', () => {
     setTimeout(() => {
       printWin.print();
-      // Optional: auto-close after print dialog opens
-      printWin.close();
     }, 500);
   });
 }
