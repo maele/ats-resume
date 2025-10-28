@@ -1,43 +1,35 @@
 {
-  "name": "Alex Morgan",
-  "title": "Senior Software Engineer",
+  "name": "John Doe",
+  "title": "Builder",
   "contact": {
-    "email": "alex.morgan@email.com",
-    "phone": "(555) 123-4567",
-    "website": "https://alexmorgan.dev",
-    "linkedin": "https://linkedin.com/in/alexmorgan"
+    "email": "john.doe@example.com",
+    "phone": "+1 (555) 123-4567",
+    "website": "johndoe.com",
+    "linkedin": "https://linkedin.com/in/johndoe"
   },
-  "summary": "Full-stack engineer with 6+ years of experience building scalable web applications. Passionate about clean architecture, performance optimization, and developer experience. Proven track record of leading cross-functional teams to deliver user-centric products.",
+  "summary": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim aeque doleamus animo, cum corpore dolemus, fieri tamen permagna accessio potest, si aliquod aeternum et infinitum impendere malum nobis opinemur. Quod idem licet transferre in voluptatem, ut postea variari voluptas distinguique possit, augeri amplificarique non possit. At etiam Athenis, ut e patre audiebam facete.",
   "experience": [
     {
-      "role": "Lead Frontend Engineer",
-      "company": "Nexus Labs • San Francisco, CA (Remote)",
-      "duration": "Jan 2022 – Present",
+      "role": "Project manager",
+      "company": "Nalane Industries",
+      "duration": "January 2025 - October 2025",
       "highlights": [
-        "Architected and launched a design system used by 15+ product teams, reducing UI inconsistencies by 70%",
-        "Migrated legacy React codebase to TypeScript, improving type safety and reducing runtime errors by 45%",
-        "Led performance initiative that improved Lighthouse scores from 55 → 92 across all core products"
-      ]
-    },
-    {
-      "role": "Software Engineer",
-      "company": "Vertex Solutions • Austin, TX",
-      "duration": "Mar 2019 – Dec 2021",
-      "highlights": [
-        "Built real-time analytics dashboard using React, Redux, and WebSockets serving 10k+ daily users",
-        "Implemented CI/CD pipeline with GitHub Actions, reducing deployment time from 20min → 4min",
-        "Collaborated with UX researchers to conduct usability tests and iterate on key user flows"
+        "Te ne Graecis quidem cedentem in philosophia audeam scribere?",
+        "Quamquam a te ipso id quidem licebit iis existimare, qui legerint",
+        "Nos autem hanc omnem quaestionem de finibus bonorum et malorum"
       ]
     }
   ],
   "education": {
-    "degree": "B.S. in Computer Science",
-    "school": "Stanford University • Stanford, CA",
-    "duration": "2015 – 2019",
-    "details": "GPA: 3.87/4.0 • Dean’s List (6 semesters)"
+    "degree": "Diploma in Construction management",
+    "school": "Fokothi",
+    "duration": "2022 - 2024",
+    "details": "Honours"
   },
   "skills": [
-    "React", "TypeScript", "Node.js", "GraphQL", "Next.js",
-    "Tailwind CSS", "Docker", "AWS", "Jest", "PostgreSQL"
+    "building",
+    "architecture",
+    "roofing",
+    "quantity surveying"
   ]
 }
