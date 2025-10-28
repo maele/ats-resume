@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alex Morgan — Senior Software Engineer</title>
+  
+  <!-- Google Fonts: Inter + JetBrains Mono -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            primary: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            },
+            dark: '#1e293b',
+            slate: '#64748b',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-feature-settings: "liga" 1, "calt" 1;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-dark font-sans">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+    <!-- Header -->
+    <header class="text-center mb-12 sm:mb-16">
+      <h1 class="text-3xl sm:text-4xl font-bold mb-2">Alex Morgan</h1>
+      <p class="text-lg text-primary-600 font-medium mb-4">Senior Software Engineer</p>
+      
+      <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-slate">
+        <span>📧 alex.morgan@email.com</span>
+        <span>📱 (555) 123-4567</span>
+        <span>🌐 <a href="https://alexmorgan.dev" class="text-primary-600 hover:underline">alexmorgan.dev</a></span>
+        <span>🔗 <a href="https://linkedin.com/in/alexmorgan" class="text-primary-600 hover:underline">linkedin.com/in/alexmorgan</a></span>
+      </div>
+    </header>
+
+    <!-- Summary -->
+    <section class="mb-10">
+      <h2 class="text-xl font-semibold text-primary-700 mb-3 pb-1 border-b border-primary-200">Professional Summary</h2>
+      <p class="text-gray-700 leading-relaxed">
+        Full-stack engineer with 6+ years of experience building scalable web applications. Passionate about clean architecture, performance optimization, and developer experience. Proven track record of leading cross-functional teams to deliver user-centric products.
+      </p>
+    </section>
+
+    <!-- Experience -->
+    <section class="mb-10">
+      <h2 class="text-xl font-semibold text-primary-700 mb-5 pb-1 border-b border-primary-200">Experience</h2>
+      
+      <div class="space-y-6">
+        <!-- Job 1 -->
+        <article class="relative pl-5 border-l-2 border-primary-100">
+          <div class="absolute left-[-9px] top-1 w-4 h-4 rounded-full bg-primary-500"></div>
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-1">
+            <h3 class="font-semibold text-lg">Lead Frontend Engineer</h3>
+            <span class="text-sm text-slate mt-1 sm:mt-0">Jan 2022 – Present</span>
+          </div>
+          <p class="font-medium text-primary-700 mb-2">Nexus Labs • San Francisco, CA (Remote)</p>
+          <ul class="space-y-2 text-gray-700">
+            <li>• Architected and launched a design system used by 15+ product teams, reducing UI inconsistencies by 70%</li>
+            <li>• Migrated legacy React codebase to TypeScript, improving type safety and reducing runtime errors by 45%</li>
+            <li>• Led performance initiative that improved Lighthouse scores from 55 → 92 across all core products</li>
+          </ul>
+        </article>
+
+        <!-- Job 2 -->
+        <article class="relative pl-5 border-l-2 border-primary-100">
+          <div class="absolute left-[-9px] top-1 w-4 h-4 rounded-full bg-primary-500"></div>
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-1">
+            <h3 class="font-semibold text-lg">Software Engineer</h3>
+            <span class="text-sm text-slate mt-1 sm:mt-0">Mar 2019 – Dec 2021</span>
+          </div>
+          <p class="font-medium text-primary-700 mb-2">Vertex Solutions • Austin, TX</p>
+          <ul class="space-y-2 text-gray-700">
+            <li>• Built real-time analytics dashboard using React, Redux, and WebSockets serving 10k+ daily users</li>
+            <li>• Implemented CI/CD pipeline with GitHub Actions, reducing deployment time from 20min → 4min</li>
+            <li>• Collaborated with UX researchers to conduct usability tests and iterate on key user flows</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- Education -->
+    <section class="mb-10">
+      <h2 class="text-xl font-semibold text-primary-700 mb-5 pb-1 border-b border-primary-200">Education</h2>
+      <article class="pl-5 border-l-2 border-primary-100 relative">
+        <div class="absolute left-[-9px] top-1 w-4 h-4 rounded-full bg-primary-500"></div>
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-1">
+          <h3 class="font-semibold text-lg">B.S. in Computer Science</h3>
+          <span class="text-sm text-slate">2015 – 2019</span>
+        </div>
+        <p class="font-medium text-primary-700 mb-2">Stanford University • Stanford, CA</p>
+        <p class="text-gray-700">GPA: 3.87/4.0 • Dean’s List (6 semesters)</p>
+      </article>
+    </section>
+
+    <!-- Skills -->
+    <section>
+      <h2 class="text-xl font-semibold text-primary-700 mb-4 pb-1 border-b border-primary-200">Technical Skills</h2>
+      <div class="flex flex-wrap gap-2">
+        <!-- Use mono font for tech terms -->
+        <span class="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg text-sm font-mono font-medium">React</span>
+        <span class="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg text-sm font-mono font-medium">TypeScript</span>
+        <span class="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg text-sm font-mono font-medium">Node.js</span>
+        <span class="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg text-sm font-mono font-medium">GraphQL</span>
+        <span class="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg text-sm font-mono font-medium">Next.js</span>
+        <span class="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg text-sm font-mono font-medium">Tailwind CSS</span>
+        <span class="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg text-sm font-mono font-medium">Docker</span>
+        <span class="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg text-sm font-mono font-medium">AWS</span>
+        <span class="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg text-sm font-mono font-medium">Jest</span>
+        <span class="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg text-sm font-mono font-medium">PostgreSQL</span>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

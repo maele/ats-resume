@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+            dark: '#1e293b',
+            slate: '#64748b',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-feature-settings: "liga" 1, "calt" 1; -webkit-font-smoothing: antialiased; }
+    .form-section { @apply mb-6 p-4 bg-white rounded-lg shadow-sm border; }
+    .preview-mode h1, .preview-mode h2, .preview-mode h3 { @apply font-bold; }
+    .preview-mode a { @apply text-primary-600; }
+  </style>
+</head>
+<body class="bg-gray-50 text-dark font-sans">
+  <div id="app" class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+    <!-- Toggle Mode -->
+    <div class="flex justify-center mb-6">
+      <button id="toggleBuilder" class="px-4 py-2 bg-primary-600 text-white rounded-l-lg font-medium">Resume Builder</button>
+      <button id="togglePreview" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-r-lg font-medium">Preview Resume</button>
+    </div>
+
+    <!-- Builder View -->
+    <div id="builderView" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Form -->
+      <div class="space-y-6">
+        <div class="form-section">
+          <h3 class="font-semibold text-lg mb-3">Personal Information</h3>
+          <div class="space-y-3">
+            <input type="text" id="name" placeholder="Full Name" class="w-full p-2 border rounded" />
+            <input type="text" id="title" placeholder="Job Title" class="w-full p-2 border rounded" />
+            <input type="email" id="email" placeholder="Email" class="w-full p-2 border rounded" />
+            <input type="tel" id="phone" placeholder="Phone" class="w-full p-2 border rounded" />
+            <input type="url" id="website" placeholder="Portfolio URL" class="w-full p-2 border rounded" />
+            <input type="url" id="linkedin" placeholder="LinkedIn URL" class="w-full p-2 border rounded" />
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="font-semibold text-lg mb-3">Professional Summary</h3>
+          <textarea id="summary" placeholder="Write a short summary..." class="w-full p-2 border rounded" rows="4"></textarea>
+        </div>
+
+        <div class="form-section">
+          <h3 class="font-semibold text-lg mb-3">Experience</h3>
+          <div id="experienceItems"></div>
+          <button type="button" id="addExperience" class="mt-2 text-sm text-primary-600 hover:underline">+ Add Experience</button>
+        </div>
+
+        <div class="form-section">
+          <h3 class="font-semibold text-lg mb-3">Education</h3>
+          <div class="space-y-3">
+            <input type="text" id="degree" placeholder="Degree (e.g., B.S. Computer Science)" class="w-full p-2 border rounded" />
+            <input type="text" id="school" placeholder="School" class="w-full p-2 border rounded" />
+            <input type="text" id="eduDuration" placeholder="Duration (e.g., 2018 – 2022)" class="w-full p-2 border rounded" />
+            <input type="text" id="eduDetails" placeholder="Details (GPA, honors, etc.)" class="w-full p-2 border rounded" />
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="font-semibold text-lg mb-3">Skills</h3>
+          <input type="text" id="skillsInput" placeholder="Add skills separated by commas (React, Python, AWS...)" class="w-full p-2 border rounded" />
+        </div>
+
+        <div class="flex gap-3">
+          <button id="saveToApi" class="px-4 py-2 bg-green-600 text-white rounded font-medium">Save to Backend</button>
+          <button id="exportJson" class="px-4 py-2 bg-gray-700 text-white rounded font-medium">Export JSON</button>
+        </div>
+      </div>
+
+      <!-- Live Preview -->
+      <div id="previewPane" class="bg-white p-6 rounded-lg shadow">
+        <div id="resumePreview" class="preview-mode"></div>
+      </div>
+    </div>
+
+    <!-- Preview-Only View (your original resume) -->
+    <div id="previewView" class="hidden">
+      <!-- Will be populated by JS -->
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const builderView = document.getElementById('builderView');
+    const previewView = document.getElementById('previewView');
+    const toggleBuilderBtn = document.getElementById('toggleBuilder');
+    const togglePreviewBtn = document.getElementById('togglePreview');
+    const experienceItems = document.getElementById('experienceItems');
+    const addExpBtn = document.getElementById('addExperience');
+
+    // State
+    let resumeData = {
+      name: "",
+      title: "",
+      contact: { email: "", phone: "", website: "", linkedin: "" },
+      summary: "",
+      experience: [],
+      education: { degree: "", school: "", duration: "", details: "" },
+      skills: []
+    };
+
+    // Initialize
+    function init() {
+      renderExperienceForm();
+      bindEvents();
+      loadFromLocalStorage();
+      updatePreview();
+    }
+
+    function bindEvents() {
+      // Toggle views
+      toggleBuilderBtn.addEventListener('click', () => {
+        builderView.classList.remove('hidden');
+        previewView.classList.add('hidden');
+        toggleBuilderBtn.classList.add('bg-primary-600', 'text-white');
+        toggleBuilderBtn.classList.remove('bg-gray-200', 'text-gray-700');
+        togglePreviewBtn.classList.remove('bg-primary-600', 'text-white');
+        togglePreviewBtn.classList.add('bg-gray-200', 'text-gray-700');
+      });
+
+      togglePreviewBtn.addEventListener('click', () => {
+        builderView.classList.add('hidden');
+        previewView.classList.remove('hidden');
+        togglePreviewBtn.classList.add('bg-primary-600', 'text-white');
+        togglePreviewBtn.classList.remove('bg-gray-200', 'text-gray-700');
+        toggleBuilderBtn.classList.remove('bg-primary-600', 'text-white');
+        toggleBuilderBtn.classList.add('bg-gray-200', 'text-gray-700');
+        renderFinalPreview();
+      });
+
+      // Input listeners
+      ['name', 'title', 'email', 'phone', 'website', 'linkedin', 'summary', 'degree', 'school', 'eduDuration', 'eduDetails'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updateFromForm);
+      });
+
+      document.getElementById('skillsInput').addEventListener('change', (e) => {
+        resumeData.skills = e.target.value.split(',').map(s => s.trim()).filter(s => s);
+        saveToLocalStorage();
+        updatePreview();
+      });
+
+      // Export
+      document.getElementById('exportJson').addEventListener('click', exportJson);
+      
+      // Save to API
+      document.getElementById('saveToApi').addEventListener('click', saveToBackend);
+    }
+
+    function updateFromForm(e) {
+      const id = e.target.id;
+      const value = e.target.value;
+
+      if (['email', 'phone', 'website', 'linkedin'].includes(id)) {
+        resumeData.contact[id] = value;
+      } else if (['degree', 'school', 'eduDuration', 'eduDetails'].includes(id)) {
+        resumeData.education[id === 'eduDuration' ? 'duration' : id === 'eduDetails' ? 'details' : id] = value;
+      } else {
+        resumeData[id] = value;
+      }
+
+      saveToLocalStorage();
+      updatePreview();
+    }
+
+    function renderExperienceForm() {
+      experienceItems.innerHTML = '';
+      resumeData.experience.forEach((exp, i) => {
+        const div = document.createElement('div');
+        div.className = 'border p-3 mb-3 rounded bg-gray-50';
+        div.innerHTML = `
+          <input type="text" data-index="${i}" data-field="role" value="${exp.role || ''}" placeholder="Job Title" class="w-full p-2 mb-2 border rounded" />
+          <input type="text" data-index="${i}" data-field="company" value="${exp.company || ''}" placeholder="Company • Location" class="w-full p-2 mb-2 border rounded" />
+          <input type="text" data-index="${i}" data-field="duration" value="${exp.duration || ''}" placeholder="Duration (e.g., Jan 2020 – Present)" class="w-full p-2 mb-2 border rounded" />
+          <textarea data-index="${i}" data-field="highlights" placeholder="Achievements (one per line)" class="w-full p-2 border rounded" rows="3">${(exp.highlights || []).join('\n')}</textarea>
+          <button type="button" class="mt-2 text-red-600 text-sm remove-exp" data-index="${i}">Remove</button>
+        `;
+        experienceItems.appendChild(div);
+      });
+
+      // Bind events for new inputs
+      experienceItems.querySelectorAll('input, textarea').forEach(el => {
+        el.addEventListener('input', handleExperienceInput);
+      });
+      experienceItems.querySelectorAll('.remove-exp').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const i = e.target.dataset.index;
+          resumeData.experience.splice(i, 1);
+          saveToLocalStorage();
+          renderExperienceForm();
+          updatePreview();
+        });
+      });
+    }
+
+    function handleExperienceInput(e) {
+      const i = e.target.dataset.index;
+      const field = e.target.dataset.field;
+      const value = e.target.value;
+
+      if (!resumeData.experience[i]) resumeData.experience[i] = { highlights: [] };
+
+      if (field === 'highlights') {
+        resumeData.experience[i][field] = value.split('\n').filter(line => line.trim());
+      } else {
+        resumeData.experience[i][field] = value;
+      }
+
+      saveToLocalStorage();
+      updatePreview();
+    }
+
+    addExpBtn.addEventListener('click', () => {
+      resumeData.experience.push({ role: '', company: '', duration: '', highlights: [] });
+      saveToLocalStorage();
+      renderExperienceForm();
+      updatePreview();
+    });
+
+    function updatePreview() {
+      const preview = document.getElementById('resumePreview');
+      preview.innerHTML = `
+        <header class="text-center mb-8">
+          <h1 class="text-3xl font-bold mb-2">${resumeData.name || 'Your Name'}</h1>
+          <p class="text-lg text-primary-600 mb-3">${resumeData.title || 'Your Title'}</p>
+          <div class="flex flex-wrap justify-center gap-3 text-sm text-slate">
+            ${resumeData.contact.email ? `<span>📧 ${resumeData.contact.email}</span>` : ''}
+            ${resumeData.contact.phone ? `<span>📱 ${resumeData.contact.phone}</span>` : ''}
+            ${resumeData.contact.website ? `<span>🌐 <a href="${resumeData.contact.website}" target="_blank">${new URL(resumeData.contact.website).hostname}</a></span>` : ''}
+            ${resumeData.contact.linkedin ? `<span>🔗 <a href="${resumeData.contact.linkedin}" target="_blank">LinkedIn</a></span>` : ''}
+          </div>
+        </header>
+
+        ${resumeData.summary ? `
+        <section class="mb-6">
+          <h2 class="text-xl font-semibold text-primary-700 mb-2 pb-1 border-b border-primary-200">Professional Summary</h2>
+          <p class="text-gray-700">${resumeData.summary}</p>
+        </section>` : ''}
+
+        ${resumeData.experience.length ? `
+        <section class="mb-6">
+          <h2 class="text-xl font-semibold text-primary-700 mb-4 pb-1 border-b border-primary-200">Experience</h2>
+          ${resumeData.experience.map(exp => `
+            <article class="relative pl-5 border-l-2 border-primary-100 mb-5">
+              <div class="absolute left-[-9px] top-1 w-3 h-3 rounded-full bg-primary-500"></div>
+              <div class="flex flex-col sm:flex-row justify-between mb-1">
+                <h3 class="font-semibold">${exp.role || ''}</h3>
+                <span class="text-sm text-slate">${exp.duration || ''}</span>
+              </div>
+              <p class="font-medium text-primary-700 mb-2">${exp.company || ''}</p>
+              ${exp.highlights.length ? `<ul class="space-y-1 text-gray-700">${exp.highlights.map(h => `<li>• ${h}</li>`).join('')}</ul>` : ''}
+            </article>
+          `).join('')}
+        </section>` : ''}
+
+        ${resumeData.education.degree ? `
+        <section class="mb-6">
+          <h2 class="text-xl font-semibold text-primary-700 mb-4 pb-1 border-b border-primary-200">Education</h2>
+          <article class="relative pl-5 border-l-2 border-primary-100">
+            <div class="absolute left-[-9px] top-1 w-3 h-3 rounded-full bg-primary-500"></div>
+            <div class="flex flex-col sm:flex-row justify-between mb-1">
+              <h3 class="font-semibold">${resumeData.education.degree}</h3>
+              <span class="text-sm text-slate">${resumeData.education.duration || ''}</span>
+            </div>
+            <p class="font-medium text-primary-700 mb-1">${resumeData.education.school || ''}</p>
+            <p class="text-gray-700">${resumeData.education.details || ''}</p>
+          </article>
+        </section>` : ''}
+
+        ${resumeData.skills.length ? `
+        <section>
+          <h2 class="text-xl font-semibold text-primary-700 mb-3 pb-1 border-b border-primary-200">Technical Skills</h2>
+          <div class="flex flex-wrap gap-2">
+            ${resumeData.skills.map(skill => `<span class="px-2.5 py-1 bg-primary-50 text-primary-700 rounded text-sm font-mono">${skill}</span>`).join('')}
+          </div>
+        </section>` : ''}
+      `;
+    }
+
+    function renderFinalPreview() {
+      // Reuse the same preview logic but in full-page mode
+      previewView.innerHTML = `<div class="max-w-4xl mx-auto py-10 px-4 sm:px-6">${document.getElementById('resumePreview').innerHTML}</div>`;
+    }
+
+    function saveToLocalStorage() {
+      localStorage.setItem('resumeBuilderData', JSON.stringify(resumeData));
+    }
+
+    function loadFromLocalStorage() {
+      const saved = localStorage.getItem('resumeBuilderData');
+      if (saved) {
+        resumeData = JSON.parse(saved);
+        // Populate form fields
+        ['name', 'title', 'summary', 'degree', 'school', 'eduDuration', 'eduDetails'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = resumeData[id] || '';
+        });
+        ['email', 'phone', 'website', 'linkedin'].forEach(key => {
+          const el = document.getElementById(key);
+          if (el) el.value = resumeData.contact[key] || '';
+        });
+        if (resumeData.skills.length) {
+          document.getElementById('skillsInput').value = resumeData.skills.join(', ');
+        }
+        renderExperienceForm();
+      }
+    }
+
+    function exportJson() {
+      const dataStr = JSON.stringify(resumeData, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      const exportFileDefaultName = 'resume.json';
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+    }
+
+    async function saveToBackend() {
+      try {
+        const response = await fetch('/api/resume', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(resumeData)
+        });
+        if (response.ok) {
+          alert('✅ Resume saved to backend!');
+        } else {
+          const err = await response.text();
+          alert('❌ Save failed: ' + err);
+        }
+      } catch (e) {
+        alert('❌ Network error: ' + e.message);
+      }
+    }
+
+    // Start
+    init();
+  </script>
+</body>
+</html>
