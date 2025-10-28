@@ -19,7 +19,7 @@ if not os.path.exists(RESUME_PATH):
             "contact": {},
             "summary": "",
             "experience": [],
-            "education": {},
+            "education": [],
             "skills": []
         }, f)
 
@@ -57,7 +57,7 @@ class ResumeData(BaseModel):
     contact: ContactInfo
     summary: str
     experience: List[ExperienceItem]
-    education: EducationInfo
+    education: List[EducationInfo]
     skills: List[str]
 
 @app.get("/api/resume", response_model=ResumeData)

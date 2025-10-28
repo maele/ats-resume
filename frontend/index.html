@@ -67,12 +67,8 @@
 
         <div class="form-section">
           <h3 class="font-semibold text-lg mb-3">Education</h3>
-          <div class="space-y-3">
-            <input type="text" id="degree" placeholder="Degree (e.g., B.S. Computer Science)" class="w-full p-2 border rounded" />
-            <input type="text" id="school" placeholder="School" class="w-full p-2 border rounded" />
-            <input type="text" id="eduDuration" placeholder="Duration (e.g., 2018 – 2022)" class="w-full p-2 border rounded" />
-            <input type="text" id="eduDetails" placeholder="Details (GPA, honors, etc.)" class="w-full p-2 border rounded" />
-          </div>
+          <div id="educationItems"></div>
+          <button type="button" id="addEducation" class="mt-2 text-sm text-primary-600 hover:underline">+ Add School</button>
         </div>
 
         <div class="form-section">
@@ -80,9 +76,12 @@
           <input type="text" id="skillsInput" placeholder="Add skills separated by commas (React, Python, AWS...)" class="w-full p-2 border rounded" />
         </div>
 
-        <div class="flex gap-3">
+        <div class="flex flex-wrap gap-3">
           <button id="saveToApi" class="px-4 py-2 bg-green-600 text-white rounded font-medium">Save to Backend</button>
           <button id="exportJson" class="px-4 py-2 bg-gray-700 text-white rounded font-medium">Export JSON</button>
+          <button id="exportPdf" class="px-4 py-2 bg-red-600 text-white rounded font-medium">Export to PDF</button>
+          <button id="importJson" class="px-4 py-2 bg-blue-600 text-white rounded font-medium">Import JSON</button>
+          <input type="file" id="jsonFile" accept=".json" class="hidden" />
         </div>
       </div>
 
@@ -99,261 +98,620 @@
   </div>
 
   <script>
-    // DOM Elements
-    const builderView = document.getElementById('builderView');
-    const previewView = document.getElementById('previewView');
-    const toggleBuilderBtn = document.getElementById('toggleBuilder');
-    const togglePreviewBtn = document.getElementById('togglePreview');
-    const experienceItems = document.getElementById('experienceItems');
-    const addExpBtn = document.getElementById('addExperience');
+  // DOM Elements
+  const builderView = document.getElementById('builderView');
+  const previewView = document.getElementById('previewView');
+  const toggleBuilderBtn = document.getElementById('toggleBuilder');
+  const togglePreviewBtn = document.getElementById('togglePreview');
+  const experienceItems = document.getElementById('experienceItems');
+  const educationItems = document.getElementById('educationItems');
+  const addExpBtn = document.getElementById('addExperience');
+  const addEduBtn = document.getElementById('addEducation');
+  const skillsInput = document.getElementById('skillsInput');
 
-    // State
-    let resumeData = {
-      name: "",
-      title: "",
-      contact: { email: "", phone: "", website: "", linkedin: "" },
-      summary: "",
-      experience: [],
-      education: { degree: "", school: "", duration: "", details: "" },
-      skills: []
-    };
+  // State - now education is an array
+  let resumeData = {
+    name: "",
+    title: "",
+    contact: { email: "", phone: "", website: "", linkedin: "" },
+    summary: "",
+    experience: [],
+    education: [], // ← array now
+    skills: []
+  };
 
-    // Initialize
-    function init() {
-      renderExperienceForm();
-      bindEvents();
-      loadFromLocalStorage();
-      updatePreview();
-    }
+  // Initialize
+  function init() {
+    renderExperienceForm();
+    renderEducationForm();
+    bindEvents();
+    loadFromLocalStorage();
+    updatePreview();
+  }
 
-    function bindEvents() {
-      // Toggle views
-      toggleBuilderBtn.addEventListener('click', () => {
-        builderView.classList.remove('hidden');
-        previewView.classList.add('hidden');
-        toggleBuilderBtn.classList.add('bg-primary-600', 'text-white');
-        toggleBuilderBtn.classList.remove('bg-gray-200', 'text-gray-700');
-        togglePreviewBtn.classList.remove('bg-primary-600', 'text-white');
-        togglePreviewBtn.classList.add('bg-gray-200', 'text-gray-700');
-      });
+  function bindEvents() {
+    // Toggle views
+    toggleBuilderBtn.addEventListener('click', () => {
+      builderView.classList.remove('hidden');
+      previewView.classList.add('hidden');
+      toggleBuilderBtn.className = 'px-4 py-2 bg-primary-600 text-white rounded-l-lg font-medium';
+      togglePreviewBtn.className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-r-lg font-medium';
+    });
 
-      togglePreviewBtn.addEventListener('click', () => {
-        builderView.classList.add('hidden');
-        previewView.classList.remove('hidden');
-        togglePreviewBtn.classList.add('bg-primary-600', 'text-white');
-        togglePreviewBtn.classList.remove('bg-gray-200', 'text-gray-700');
-        toggleBuilderBtn.classList.remove('bg-primary-600', 'text-white');
-        toggleBuilderBtn.classList.add('bg-gray-200', 'text-gray-700');
-        renderFinalPreview();
-      });
+    togglePreviewBtn.addEventListener('click', () => {
+      builderView.classList.add('hidden');
+      previewView.classList.remove('hidden');
+      togglePreviewBtn.className = 'px-4 py-2 bg-primary-600 text-white rounded-r-lg font-medium';
+      toggleBuilderBtn.className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-l-lg font-medium';
+      renderFinalPreview();
+    });
 
-      // Input listeners
-      ['name', 'title', 'email', 'phone', 'website', 'linkedin', 'summary', 'degree', 'school', 'eduDuration', 'eduDetails'].forEach(id => {
-        document.getElementById(id).addEventListener('input', updateFromForm);
-      });
-
-      document.getElementById('skillsInput').addEventListener('change', (e) => {
-        resumeData.skills = e.target.value.split(',').map(s => s.trim()).filter(s => s);
-        saveToLocalStorage();
-        updatePreview();
-      });
-
-      // Export
-      document.getElementById('exportJson').addEventListener('click', exportJson);
-      
-      // Save to API
-      document.getElementById('saveToApi').addEventListener('click', saveToBackend);
-    }
-
-    function updateFromForm(e) {
-      const id = e.target.id;
-      const value = e.target.value;
-
-      if (['email', 'phone', 'website', 'linkedin'].includes(id)) {
-        resumeData.contact[id] = value;
-      } else if (['degree', 'school', 'eduDuration', 'eduDetails'].includes(id)) {
-        resumeData.education[id === 'eduDuration' ? 'duration' : id === 'eduDetails' ? 'details' : id] = value;
-      } else {
-        resumeData[id] = value;
-      }
-
-      saveToLocalStorage();
-      updatePreview();
-    }
-
-    function renderExperienceForm() {
-      experienceItems.innerHTML = '';
-      resumeData.experience.forEach((exp, i) => {
-        const div = document.createElement('div');
-        div.className = 'border p-3 mb-3 rounded bg-gray-50';
-        div.innerHTML = `
-          <input type="text" data-index="${i}" data-field="role" value="${exp.role || ''}" placeholder="Job Title" class="w-full p-2 mb-2 border rounded" />
-          <input type="text" data-index="${i}" data-field="company" value="${exp.company || ''}" placeholder="Company • Location" class="w-full p-2 mb-2 border rounded" />
-          <input type="text" data-index="${i}" data-field="duration" value="${exp.duration || ''}" placeholder="Duration (e.g., Jan 2020 – Present)" class="w-full p-2 mb-2 border rounded" />
-          <textarea data-index="${i}" data-field="highlights" placeholder="Achievements (one per line)" class="w-full p-2 border rounded" rows="3">${(exp.highlights || []).join('\n')}</textarea>
-          <button type="button" class="mt-2 text-red-600 text-sm remove-exp" data-index="${i}">Remove</button>
-        `;
-        experienceItems.appendChild(div);
-      });
-
-      // Bind events for new inputs
-      experienceItems.querySelectorAll('input, textarea').forEach(el => {
-        el.addEventListener('input', handleExperienceInput);
-      });
-      experienceItems.querySelectorAll('.remove-exp').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const i = e.target.dataset.index;
-          resumeData.experience.splice(i, 1);
+    // Personal & summary inputs
+    ['name', 'title', 'summary'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', (e) => {
+          resumeData[id] = e.target.value;
           saveToLocalStorage();
-          renderExperienceForm();
           updatePreview();
         });
-      });
-    }
-
-    function handleExperienceInput(e) {
-      const i = e.target.dataset.index;
-      const field = e.target.dataset.field;
-      const value = e.target.value;
-
-      if (!resumeData.experience[i]) resumeData.experience[i] = { highlights: [] };
-
-      if (field === 'highlights') {
-        resumeData.experience[i][field] = value.split('\n').filter(line => line.trim());
-      } else {
-        resumeData.experience[i][field] = value;
       }
+    });
 
+    // Contact inputs
+    ['email', 'phone', 'website', 'linkedin'].forEach(key => {
+      const el = document.getElementById(key);
+      if (el) {
+        el.addEventListener('input', (e) => {
+          resumeData.contact[key] = e.target.value;
+          saveToLocalStorage();
+          updatePreview();
+        });
+      }
+    });
+
+    // Skills
+    skillsInput.addEventListener('change', (e) => {
+      resumeData.skills = e.target.value
+        .split(',')
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
       saveToLocalStorage();
       updatePreview();
-    }
+    });
 
+    // Buttons
     addExpBtn.addEventListener('click', () => {
-      resumeData.experience.push({ role: '', company: '', duration: '', highlights: [] });
+      resumeData.experience.push({
+        role: '',
+        company: '',
+        duration: '',
+        highlights: []
+      });
       saveToLocalStorage();
       renderExperienceForm();
       updatePreview();
     });
 
-    function updatePreview() {
-      const preview = document.getElementById('resumePreview');
-      preview.innerHTML = `
-        <header class="text-center mb-8">
-          <h1 class="text-3xl font-bold mb-2">${resumeData.name || 'Your Name'}</h1>
-          <p class="text-lg text-primary-600 mb-3">${resumeData.title || 'Your Title'}</p>
-          <div class="flex flex-wrap justify-center gap-3 text-sm text-slate">
-            ${resumeData.contact.email ? `<span>📧 ${resumeData.contact.email}</span>` : ''}
-            ${resumeData.contact.phone ? `<span>📱 ${resumeData.contact.phone}</span>` : ''}
-            ${resumeData.contact.website ? `<span>🌐 <a href="${resumeData.contact.website}" target="_blank">${new URL(resumeData.contact.website).hostname}</a></span>` : ''}
-            ${resumeData.contact.linkedin ? `<span>🔗 <a href="${resumeData.contact.linkedin}" target="_blank">LinkedIn</a></span>` : ''}
-          </div>
-        </header>
+    addEduBtn.addEventListener('click', () => {
+      resumeData.education.push({
+        degree: '',
+        school: '',
+        duration: '',
+        details: ''
+      });
+      saveToLocalStorage();
+      renderEducationForm();
+      updatePreview();
+    });
 
-        ${resumeData.summary ? `
+    document.getElementById('exportJson').addEventListener('click', exportJson);
+    document.getElementById('saveToApi').addEventListener('click', saveToBackend);
+    document.getElementById('exportPdf').addEventListener('click', exportToPdf);
+    setupImport();
+  }
+
+  // ===== EXPERIENCE =====
+  function renderExperienceForm() {
+    experienceItems.innerHTML = '';
+    resumeData.experience.forEach((exp, i) => {
+      const div = document.createElement('div');
+      div.className = 'border p-3 mb-3 rounded bg-gray-50';
+      div.innerHTML = `
+        <input type="text" data-index="${i}" data-field="role" value="${exp.role || ''}" placeholder="Job Title" class="w-full p-2 mb-2 border rounded" />
+        <input type="text" data-index="${i}" data-field="company" value="${exp.company || ''}" placeholder="Company • Location" class="w-full p-2 mb-2 border rounded" />
+        <input type="text" data-index="${i}" data-field="duration" value="${exp.duration || ''}" placeholder="Duration (e.g., Jan 2020 – Present)" class="w-full p-2 mb-2 border rounded" />
+        <textarea data-index="${i}" data-field="highlights" placeholder="Achievements (one per line)" class="w-full p-2 border rounded" rows="3">${(exp.highlights || []).join('\n')}</textarea>
+        <button type="button" class="mt-2 text-red-600 text-sm remove-exp" data-index="${i}">Remove</button>
+      `;
+      experienceItems.appendChild(div);
+    });
+
+    experienceItems.querySelectorAll('input, textarea').forEach(el => {
+      el.addEventListener('input', handleExperienceInput);
+    });
+
+    experienceItems.querySelectorAll('.remove-exp').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const index = parseInt(e.target.dataset.index);
+        resumeData.experience.splice(index, 1);
+        saveToLocalStorage();
+        renderExperienceForm();
+        updatePreview();
+      });
+    });
+  }
+
+  function handleExperienceInput(e) {
+    const index = parseInt(e.target.dataset.index);
+    const field = e.target.dataset.field;
+    const value = e.target.value;
+
+    if (!resumeData.experience[index]) {
+      resumeData.experience[index] = { highlights: [] };
+    }
+
+    if (field === 'highlights') {
+      resumeData.experience[index].highlights = value
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line !== '');
+    } else {
+      resumeData.experience[index][field] = value;
+    }
+
+    saveToLocalStorage();
+    updatePreview();
+  }
+
+  // ===== EDUCATION =====
+  function renderEducationForm() {
+    educationItems.innerHTML = '';
+    resumeData.education.forEach((edu, i) => {
+      const div = document.createElement('div');
+      div.className = 'border p-3 mb-3 rounded bg-gray-50';
+      div.innerHTML = `
+        <input type="text" data-index="${i}" data-field="degree" value="${edu.degree || ''}" placeholder="Degree (e.g., B.S. Computer Science)" class="w-full p-2 mb-2 border rounded" />
+        <input type="text" data-index="${i}" data-field="school" value="${edu.school || ''}" placeholder="School Name" class="w-full p-2 mb-2 border rounded" />
+        <input type="text" data-index="${i}" data-field="duration" value="${edu.duration || ''}" placeholder="Duration (e.g., 2018 – 2022)" class="w-full p-2 mb-2 border rounded" />
+        <input type="text" data-index="${i}" data-field="details" value="${edu.details || ''}" placeholder="Details (GPA, honors, etc.)" class="w-full p-2 mb-2 border rounded" />
+        <button type="button" class="mt-2 text-red-600 text-sm remove-edu" data-index="${i}">Remove</button>
+      `;
+      educationItems.appendChild(div);
+    });
+
+    educationItems.querySelectorAll('input').forEach(el => {
+      el.addEventListener('input', handleEducationInput);
+    });
+
+    educationItems.querySelectorAll('.remove-edu').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const index = parseInt(e.target.dataset.index);
+        resumeData.education.splice(index, 1);
+        saveToLocalStorage();
+        renderEducationForm();
+        updatePreview();
+      });
+    });
+  }
+
+  function handleEducationInput(e) {
+    const index = parseInt(e.target.dataset.index);
+    const field = e.target.dataset.field;
+    const value = e.target.value;
+
+    if (!resumeData.education[index]) {
+      resumeData.education[index] = {};
+    }
+    resumeData.education[index][field] = value;
+
+    saveToLocalStorage();
+    updatePreview();
+  }
+
+  // ===== PREVIEW =====
+  function updatePreview() {
+    const { name, title, contact, summary, experience, education, skills } = resumeData;
+
+    // Contact
+    const contactItems = [];
+    if (contact.email) contactItems.push(`📧 ${contact.email}`);
+    if (contact.phone) contactItems.push(`📱 ${contact.phone}`);
+    if (contact.website) {
+      try {
+        const hostname = new URL(contact.website).hostname;
+        contactItems.push(`🌐 <a href="${contact.website}" target="_blank" class="text-primary-600 hover:underline">${hostname}</a>`);
+      } catch {
+        contactItems.push(`🌐 ${contact.website}`);
+      }
+    }
+    if (contact.linkedin) {
+      contactItems.push(`🔗 <a href="${contact.linkedin}" target="_blank" class="text-primary-600 hover:underline">LinkedIn</a>`);
+    }
+
+    const contactHtml = contactItems.length 
+      ? `<div class="flex flex-wrap justify-center gap-3 text-sm text-slate">${contactItems.map(item => `<span>${item}</span>`).join('')}</div>`
+      : '';
+
+    // Experience
+    const expHtml = experience.map(exp => {
+      const highlightsHtml = exp.highlights?.length
+        ? `<ul class="space-y-1 text-gray-700">${exp.highlights.map(h => `<li>• ${h}</li>`).join('')}</ul>`
+        : '';
+      return `
+        <article class="relative pl-5 border-l-2 border-primary-100 mb-5">
+          <div class="absolute left-[-9px] top-1 w-3 h-3 rounded-full bg-primary-500"></div>
+          <div class="flex flex-col sm:flex-row justify-between mb-1">
+            <h3 class="font-semibold">${exp.role || ''}</h3>
+            <span class="text-sm text-slate">${exp.duration || ''}</span>
+          </div>
+          <p class="font-medium text-primary-700 mb-2">${exp.company || ''}</p>
+          ${highlightsHtml}
+        </article>
+      `;
+    }).join('');
+
+    // Education (now supports multiple)
+    const eduHtml = education.length ? `
+      ${education.map(edu => `
+        <article class="relative pl-5 border-l-2 border-primary-100 mb-5">
+          <div class="absolute left-[-9px] top-1 w-3 h-3 rounded-full bg-primary-500"></div>
+          <div class="flex flex-col sm:flex-row justify-between mb-1">
+            <h3 class="font-semibold">${edu.degree || ''}</h3>
+            <span class="text-sm text-slate">${edu.duration || ''}</span>
+          </div>
+          <p class="font-medium text-primary-700 mb-1">${edu.school || ''}</p>
+          <p class="text-gray-700">${edu.details || ''}</p>
+        </article>
+      `).join('')}
+    ` : '';
+
+    // Skills
+    const skillsHtml = skills.length ? `
+      <div class="flex flex-wrap gap-2 mt-2">
+        ${skills.map(skill => `<span class="px-2.5 py-1 bg-primary-50 text-primary-700 rounded text-sm font-mono">${skill}</span>`).join('')}
+      </div>
+    ` : '';
+
+    const previewHtml = `
+      <header class="text-center mb-8">
+        <h1 class="text-3xl font-bold mb-2">${name || 'Your Name'}</h1>
+        <p class="text-lg text-primary-600 mb-3">${title || 'Your Title'}</p>
+        ${contactHtml}
+      </header>
+
+      ${summary ? `
         <section class="mb-6">
           <h2 class="text-xl font-semibold text-primary-700 mb-2 pb-1 border-b border-primary-200">Professional Summary</h2>
-          <p class="text-gray-700">${resumeData.summary}</p>
-        </section>` : ''}
+          <p class="text-gray-700">${summary}</p>
+        </section>
+      ` : ''}
 
-        ${resumeData.experience.length ? `
+      ${experience.length ? `
         <section class="mb-6">
           <h2 class="text-xl font-semibold text-primary-700 mb-4 pb-1 border-b border-primary-200">Experience</h2>
-          ${resumeData.experience.map(exp => `
-            <article class="relative pl-5 border-l-2 border-primary-100 mb-5">
-              <div class="absolute left-[-9px] top-1 w-3 h-3 rounded-full bg-primary-500"></div>
-              <div class="flex flex-col sm:flex-row justify-between mb-1">
-                <h3 class="font-semibold">${exp.role || ''}</h3>
-                <span class="text-sm text-slate">${exp.duration || ''}</span>
-              </div>
-              <p class="font-medium text-primary-700 mb-2">${exp.company || ''}</p>
-              ${exp.highlights.length ? `<ul class="space-y-1 text-gray-700">${exp.highlights.map(h => `<li>• ${h}</li>`).join('')}</ul>` : ''}
-            </article>
-          `).join('')}
-        </section>` : ''}
+          ${expHtml}
+        </section>
+      ` : ''}
 
-        ${resumeData.education.degree ? `
+      ${education.length ? `
         <section class="mb-6">
           <h2 class="text-xl font-semibold text-primary-700 mb-4 pb-1 border-b border-primary-200">Education</h2>
-          <article class="relative pl-5 border-l-2 border-primary-100">
-            <div class="absolute left-[-9px] top-1 w-3 h-3 rounded-full bg-primary-500"></div>
-            <div class="flex flex-col sm:flex-row justify-between mb-1">
-              <h3 class="font-semibold">${resumeData.education.degree}</h3>
-              <span class="text-sm text-slate">${resumeData.education.duration || ''}</span>
-            </div>
-            <p class="font-medium text-primary-700 mb-1">${resumeData.education.school || ''}</p>
-            <p class="text-gray-700">${resumeData.education.details || ''}</p>
-          </article>
-        </section>` : ''}
+          ${eduHtml}
+        </section>
+      ` : ''}
 
-        ${resumeData.skills.length ? `
+      ${skills.length ? `
         <section>
           <h2 class="text-xl font-semibold text-primary-700 mb-3 pb-1 border-b border-primary-200">Technical Skills</h2>
-          <div class="flex flex-wrap gap-2">
-            ${resumeData.skills.map(skill => `<span class="px-2.5 py-1 bg-primary-50 text-primary-700 rounded text-sm font-mono">${skill}</span>`).join('')}
-          </div>
-        </section>` : ''}
-      `;
-    }
+          ${skillsHtml}
+        </section>
+      ` : ''}
+    `;
 
-    function renderFinalPreview() {
-      // Reuse the same preview logic but in full-page mode
-      previewView.innerHTML = `<div class="max-w-4xl mx-auto py-10 px-4 sm:px-6">${document.getElementById('resumePreview').innerHTML}</div>`;
-    }
+    const previewEl = document.getElementById('resumePreview');
+    if (previewEl) previewEl.innerHTML = previewHtml;
+  }
 
-    function saveToLocalStorage() {
+  function renderFinalPreview() {
+    previewView.innerHTML = `<div class="max-w-4xl mx-auto py-10 px-4 sm:px-6">${document.getElementById('resumePreview').innerHTML}</div>`;
+  }
+
+  // ===== STORAGE & API =====
+  function saveToLocalStorage() {
+    try {
       localStorage.setItem('resumeBuilderData', JSON.stringify(resumeData));
+    } catch (e) {
+      console.warn('Could not save to localStorage');
     }
+  }
 
-    function loadFromLocalStorage() {
+  function loadFromLocalStorage() {
+    try {
       const saved = localStorage.getItem('resumeBuilderData');
       if (saved) {
-        resumeData = JSON.parse(saved);
-        // Populate form fields
-        ['name', 'title', 'summary', 'degree', 'school', 'eduDuration', 'eduDetails'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.value = resumeData[id] || '';
-        });
-        ['email', 'phone', 'website', 'linkedin'].forEach(key => {
-          const el = document.getElementById(key);
-          if (el) el.value = resumeData.contact[key] || '';
-        });
+        const parsed = JSON.parse(saved);
+        resumeData = {
+          name: parsed.name || '',
+          title: parsed.title || '',
+          contact: parsed.contact || { email: "", phone: "", website: "", linkedin: "" },
+          summary: parsed.summary || '',
+          experience: Array.isArray(parsed.experience) ? parsed.experience : [],
+          education: Array.isArray(parsed.education) ? parsed.education : [],
+          skills: Array.isArray(parsed.skills) ? parsed.skills : []
+        };
+        
+        // Populate top-level fields
+        document.getElementById('name').value = resumeData.name;
+        document.getElementById('title').value = resumeData.title;
+        document.getElementById('summary').value = resumeData.summary;
+        
+        // Contact
+        document.getElementById('email').value = resumeData.contact.email || '';
+        document.getElementById('phone').value = resumeData.contact.phone || '';
+        document.getElementById('website').value = resumeData.contact.website || '';
+        document.getElementById('linkedin').value = resumeData.contact.linkedin || '';
+        
+        // Skills
         if (resumeData.skills.length) {
           document.getElementById('skillsInput').value = resumeData.skills.join(', ');
         }
+        
         renderExperienceForm();
+        renderEducationForm();
       }
+    } catch (e) {
+      console.error('Failed to load from localStorage', e);
     }
+  }
 
-    function exportJson() {
-      const dataStr = JSON.stringify(resumeData, null, 2);
-      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-      const exportFileDefaultName = 'resume.json';
-      const linkElement = document.createElement('a');
-      linkElement.setAttribute('href', dataUri);
-      linkElement.setAttribute('download', exportFileDefaultName);
-      linkElement.click();
+  // exportJson function 
+function exportJson() {
+  const dataStr = JSON.stringify(resumeData, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'my-resume.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Export to PDF function
+function exportToPdf() {
+  // Generate clean resume HTML (same as preview but print-optimized)
+  const { name, title, contact, summary, experience, education, skills } = resumeData;
+
+  // Build contact
+  const contactItems = [];
+  if (contact.email) contactItems.push(`📧 ${contact.email}`);
+  if (contact.phone) contactItems.push(`📱 ${contact.phone}`);
+  if (contact.website) {
+    try {
+      contactItems.push(`🌐 ${new URL(contact.website).hostname}`);
+    } catch {
+      contactItems.push(`🌐 ${contact.website}`);
     }
+  }
+  if (contact.linkedin) contactItems.push(`🔗 LinkedIn`);
 
-    async function saveToBackend() {
-      try {
-        const response = await fetch('/api/resume', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(resumeData)
-        });
-        if (response.ok) {
-          alert('✅ Resume saved to backend!');
-        } else {
-          const err = await response.text();
-          alert('❌ Save failed: ' + err);
+  const contactHtml = contactItems.length 
+    ? `<div style="text-align:center; margin-bottom:1.5rem; font-size:0.95rem; color:#64748b;">${contactItems.join(' • ')}</div>`
+    : '';
+
+  // Experience
+  const expHtml = experience.map(exp => {
+    const highlights = exp.highlights?.length 
+      ? `<ul style="margin:0.5rem 0 0 1.2rem; padding-left:0; list-style:none;">${exp.highlights.map(h => `<li style="margin-bottom:0.3rem;">• ${h}</li>`).join('')}</ul>`
+      : '';
+    return `
+      <div style="margin-bottom:1.8rem; padding-left:1.2rem; border-left:2px solid #dbeafe; position:relative;">
+        <div style="position:absolute; left:-7px; top:0; width:10px; height:10px; border-radius:50%; background:#3b82f6;"></div>
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:0.3rem;">
+          <strong>${exp.role || ''}</strong>
+          <span style="color:#7f8c8d; font-style:italic;">${exp.duration || ''}</span>
+        </div>
+        <div style="font-weight:600; color:#2c3e50; margin-bottom:0.4rem;">${exp.company || ''}</div>
+        ${highlights}
+      </div>
+    `;
+  }).join('');
+
+  // Education
+  const eduHtml = education.length ? `
+    ${education.map(edu => `
+      <div style="margin-bottom:1.8rem; padding-left:1.2rem; border-left:2px solid #dbeafe; position:relative;">
+        <div style="position:absolute; left:-7px; top:0; width:10px; height:10px; border-radius:50%; background:#3b82f6;"></div>
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:0.3rem;">
+          <strong>${edu.degree || ''}</strong>
+          <span style="color:#7f8c8d; font-style:italic;">${edu.duration || ''}</span>
+        </div>
+        <div style="font-weight:600; color:#2c3e50; margin-bottom:0.4rem;">${edu.school || ''}</div>
+        <div>${edu.details || ''}</div>
+      </div>
+    `).join('')}
+  ` : '';
+
+  // Skills
+  const skillsHtml = skills.length ? `
+    <div style="margin-top:1rem;">
+      <h3 style="font-size:1.2rem; color:#2563eb; margin-bottom:0.6rem; padding-bottom:0.4rem; border-bottom:1px solid #3b82f6; display:inline-block;">Technical Skills</h3>
+      <div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.5rem;">
+        ${skills.map(skill => `<span style="background:#eff6ff; padding:0.25rem 0.6rem; border-radius:20px; font-size:0.85rem; font-family:'JetBrains Mono', monospace;">${skill}</span>`).join('')}
+      </div>
+    </div>
+  ` : '';
+
+  // Full resume HTML
+  const resumeHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>${name || 'Resume'} - PDF</title>
+      <style>
+        body {
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+          line-height: 1.6;
+          color: #1e293b;
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 2rem 1.5rem;
+          background: white;
         }
-      } catch (e) {
-        alert('❌ Network error: ' + e.message);
-      }
-    }
+        h1 { font-size: 2.2rem; margin-bottom: 0.3rem; color: #1e293b; }
+        h2 { font-size: 1.3rem; color: #2563eb; margin: 1.8rem 0 1rem; padding-bottom: 0.4rem; border-bottom: 1px solid #3b82f6; display: inline-block; }
+        @media print {
+          body { padding: 0; }
+          @page { margin: 0.5in; }
+        }
+      </style>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    </head>
+    <body>
+      <header style="text-align:center; margin-bottom:2rem; border-bottom:1px solid #e2e8f0; padding-bottom:1.5rem;">
+        <h1>${name || 'Your Name'}</h1>
+        <p style="font-size:1.2rem; color:#2563eb; margin-bottom:0.8rem;">${title || 'Your Title'}</p>
+        ${contactHtml}
+      </header>
 
-    // Start
-    init();
-  </script>
+      ${summary ? `
+        <section>
+          <h2>Professional Summary</h2>
+          <p>${summary}</p>
+        </section>
+      ` : ''}
+
+      ${experience.length ? `
+        <section>
+          <h2>Experience</h2>
+          ${expHtml}
+        </section>
+      ` : ''}
+
+      ${education.length ? `
+        <section>
+          <h2>Education</h2>
+          ${eduHtml}
+        </section>
+      ` : ''}
+
+      ${skills.length ? `
+        <section>
+          <h2>Technical Skills</h2>
+          ${skillsHtml}
+        </section>
+      ` : ''}
+    </body>
+    </html>
+  `;
+
+  // Open in new tab and trigger print
+  const printWin = window.open('', '_blank');
+  printWin.document.write(resumeHtml);
+  printWin.document.close();
+  
+  // Wait for fonts to load, then print
+  printWin.addEventListener('load', () => {
+    setTimeout(() => {
+      printWin.print();
+      // Optional: auto-close after print dialog opens
+      printWin.close();
+    }, 500);
+  });
+}
+
+// Add this new function
+function setupImport() {
+  document.getElementById('importJson').addEventListener('click', () => {
+    document.getElementById('jsonFile').click();
+  });
+
+  document.getElementById('jsonFile').addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target.result);
+
+        // Validate required field
+        if (!imported.name) {
+          throw new Error('Invalid file: "name" field is required');
+        }
+
+        // Safely merge with default structure
+        resumeData = {
+          name: imported.name || '',
+          title: imported.title || '',
+          contact: {
+            email: imported.contact?.email || '',
+            phone: imported.contact?.phone || '',
+            website: imported.contact?.website || '',
+            linkedin: imported.contact?.linkedin || ''
+          },
+          summary: imported.summary || '',
+          experience: Array.isArray(imported.experience) ? imported.experience : [],
+          education: Array.isArray(imported.education) ? imported.education : [],
+          skills: Array.isArray(imported.skills) ? imported.skills : []
+        };
+
+        // Update form fields
+        document.getElementById('name').value = resumeData.name;
+        document.getElementById('title').value = resumeData.title;
+        document.getElementById('summary').value = resumeData.summary;
+        
+        document.getElementById('email').value = resumeData.contact.email;
+        document.getElementById('phone').value = resumeData.contact.phone;
+        document.getElementById('website').value = resumeData.contact.website;
+        document.getElementById('linkedin').value = resumeData.contact.linkedin;
+        
+        document.getElementById('skillsInput').value = resumeData.skills.join(', ');
+
+        renderExperienceForm();
+        renderEducationForm();
+        saveToLocalStorage();
+        updatePreview();
+        alert('✅ Resume imported successfully!');
+      } catch (err) {
+        console.error('Import failed:', err);
+        alert(`❌ Import failed: ${err.message}`);
+      } finally {
+        // Reset file input
+        e.target.value = '';
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+  async function saveToBackend() {
+    if (!resumeData.name) {
+      alert('Please enter your name first.');
+      return;
+    }
+    try {
+      const response = await fetch('/api/resume', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(resumeData)
+      });
+      if (response.ok) {
+        alert('✅ Resume saved successfully!');
+      } else {
+        const errorText = await response.text();
+        alert(`❌ Save failed: ${errorText}`);
+      }
+    } catch (error) {
+      alert(`❌ Network error: ${error.message}`);
+    }
+  }
+
+  // Start
+  init();
+</script>
 </body>
 </html>
