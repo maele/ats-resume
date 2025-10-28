@@ -54,26 +54,58 @@
           </div>
         </div>
 
+        <!-- Professional summary -->
         <div class="form-section">
           <h3 class="font-semibold text-lg mb-3">Professional Summary</h3>
           <textarea id="summary" placeholder="Write a short summary..." class="w-full p-2 border rounded" rows="4"></textarea>
         </div>
 
+        <!-- Experience -->
         <div class="form-section">
           <h3 class="font-semibold text-lg mb-3">Experience</h3>
           <div id="experienceItems"></div>
           <button type="button" id="addExperience" class="mt-2 text-sm text-primary-600 hover:underline">+ Add Experience</button>
         </div>
 
+        <!-- Education -->
         <div class="form-section">
           <h3 class="font-semibold text-lg mb-3">Education</h3>
           <div id="educationItems"></div>
           <button type="button" id="addEducation" class="mt-2 text-sm text-primary-600 hover:underline">+ Add School</button>
         </div>
 
+        <!-- Skills -->
         <div class="form-section">
           <h3 class="font-semibold text-lg mb-3">Skills</h3>
-          <input type="text" id="skillsInput" placeholder="Add skills separated by commas (React, Python, AWS...)" class="w-full p-2 border rounded" />
+          <div id="skillsContainer" class="space-y-2"></div>
+          <button type="button" id="addSkill" class="mt-2 text-sm text-primary-600 hover:underline">+ Add Skill</button>
+        </div>
+        <!-- Projects -->
+        <div class="form-section">
+          <h3 class="font-semibold text-lg mb-3">Projects</h3>
+          <div id="projectsContainer" class="space-y-3"></div>
+          <button type="button" id="addProject" class="mt-2 text-sm text-primary-600 hover:underline">+ Add Project</button>
+        </div>
+
+        <!-- Certifications -->
+        <div class="form-section">
+          <h3 class="font-semibold text-lg mb-3">Certifications</h3>
+          <div id="certificationsContainer" class="space-y-3"></div>
+          <button type="button" id="addCertification" class="mt-2 text-sm text-primary-600 hover:underline">+ Add Certification</button>
+        </div>
+
+        <!-- Other Contributions -->
+        <div class="form-section">
+          <h3 class="font-semibold text-lg mb-3">Other Contributions</h3>
+          <div id="contributionsContainer" class="space-y-3"></div>
+          <button type="button" id="addContribution" class="mt-2 text-sm text-primary-600 hover:underline">+ Add Contribution</button>
+        </div>
+
+        <!-- References -->
+        <div class="form-section">
+          <h3 class="font-semibold text-lg mb-3">References</h3>
+          <div id="referencesContainer" class="space-y-3"></div>
+          <button type="button" id="addReference" class="mt-2 text-sm text-primary-600 hover:underline">+ Add Reference</button>
         </div>
 
         <div class="flex flex-wrap gap-3">
@@ -116,14 +148,19 @@
     contact: { email: "", phone: "", website: "", linkedin: "" },
     summary: "",
     experience: [],
-    education: [], // ← array now
-    skills: []
+    education: [],
+    skills: [],
+    projects: [],
+    certifications: [],
+    contributions: [],
+    references: []
   };
 
   // Initialize
   function init() {
     renderExperienceForm();
     renderEducationForm();
+    renderSkillsForm();
     bindEvents();
     loadFromLocalStorage();
     updatePreview();
@@ -171,12 +208,38 @@
     });
 
     // Skills
-    skillsInput.addEventListener('change', (e) => {
-      resumeData.skills = e.target.value
-        .split(',')
-        .map(s => s.trim())
-        .filter(s => s.length > 0);
+    document.getElementById('addSkill').addEventListener('click', () => {
+      resumeData.skills.push('');
       saveToLocalStorage();
+      renderSkillsForm();
+      updatePreview();
+    });
+
+    document.getElementById('addProject').addEventListener('click', () => {
+      resumeData.projects.push({ name: '', description: '', link: '', duration: '' });
+      saveToLocalStorage();
+      renderProjectsForm();
+      updatePreview();
+    });
+
+    document.getElementById('addCertification').addEventListener('click', () => {
+      resumeData.certifications.push({ name: '', issuer: '', date: '', credentialId: '' });
+      saveToLocalStorage();
+      renderCertificationsForm();
+      updatePreview();
+    });
+
+    document.getElementById('addContribution').addEventListener('click', () => {
+      resumeData.contributions.push({ title: '', description: '', link: '' });
+      saveToLocalStorage();
+      renderContributionsForm();
+      updatePreview();
+    });
+
+    document.getElementById('addReference').addEventListener('click', () => {
+      resumeData.references.push({ name: '', relationship: '', contact: '' });
+      saveToLocalStorage();
+      renderReferencesForm();
       updatePreview();
     });
 
@@ -371,9 +434,163 @@
     updatePreview();
   }
 
+  // ===== PROJECTS =====
+  function renderProjectsForm() {
+    const container = document.getElementById('projectsContainer');
+    container.innerHTML = '';
+    resumeData.projects.forEach((proj, i) => {
+      const div = document.createElement('div');
+      div.className = 'border p-3 rounded bg-gray-50';
+      div.innerHTML = `
+        <input type="text" data-proj-index="${i}" data-field="name" value="${proj.name || ''}" placeholder="Project Name" class="w-full p-2 mb-2 border rounded" />
+        <input type="url" data-proj-index="${i}" data-field="link" value="${proj.link || ''}" placeholder="Project URL (optional)" class="w-full p-2 mb-2 border rounded" />
+        <input type="text" data-proj-index="${i}" data-field="duration" value="${proj.duration || ''}" placeholder="Duration (e.g., 2023)" class="w-full p-2 mb-2 border rounded" />
+        <textarea data-proj-index="${i}" data-field="description" placeholder="Description" class="w-full p-2 border rounded" rows="2">${proj.description || ''}</textarea>
+        <button type="button" class="mt-2 text-red-600 text-sm remove-project" data-proj-index="${i}">Remove</button>
+      `;
+      container.appendChild(div);
+    });
+
+    container.querySelectorAll('input, textarea').forEach(el => {
+      el.addEventListener('input', (e) => {
+        const i = parseInt(e.target.dataset.projIndex);
+        const field = e.target.dataset.field;
+        if (!resumeData.projects[i]) resumeData.projects[i] = {};
+        resumeData.projects[i][field] = e.target.value;
+        saveToLocalStorage();
+        updatePreview();
+      });
+    });
+
+    container.querySelectorAll('.remove-project').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const i = parseInt(e.target.dataset.projIndex);
+        resumeData.projects.splice(i, 1);
+        saveToLocalStorage();
+        renderProjectsForm();
+        updatePreview();
+      });
+    });
+  }
+
+  // ===== CERTIFICATIONS =====
+  function renderCertificationsForm() {
+    const container = document.getElementById('certificationsContainer');
+    container.innerHTML = '';
+    resumeData.certifications.forEach((cert, i) => {
+      const div = document.createElement('div');
+      div.className = 'border p-3 rounded bg-gray-50';
+      div.innerHTML = `
+        <input type="text" data-cert-index="${i}" data-field="name" value="${cert.name || ''}" placeholder="Certification Name" class="w-full p-2 mb-2 border rounded" />
+        <input type="text" data-cert-index="${i}" data-field="issuer" value="${cert.issuer || ''}" placeholder="Issuing Organization" class="w-full p-2 mb-2 border rounded" />
+        <input type="text" data-cert-index="${i}" data-field="date" value="${cert.date || ''}" placeholder="Date (e.g., May 2023)" class="w-full p-2 mb-2 border rounded" />
+        <input type="text" data-cert-index="${i}" data-field="credentialId" value="${cert.credentialId || ''}" placeholder="Credential ID (optional)" class="w-full p-2 mb-2 border rounded" />
+        <button type="button" class="mt-2 text-red-600 text-sm remove-cert" data-cert-index="${i}">Remove</button>
+      `;
+      container.appendChild(div);
+    });
+
+    container.querySelectorAll('input').forEach(el => {
+      el.addEventListener('input', (e) => {
+        const i = parseInt(e.target.dataset.certIndex);
+        const field = e.target.dataset.field;
+        if (!resumeData.certifications[i]) resumeData.certifications[i] = {};
+        resumeData.certifications[i][field] = e.target.value;
+        saveToLocalStorage();
+        updatePreview();
+      });
+    });
+
+    container.querySelectorAll('.remove-cert').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const i = parseInt(e.target.dataset.certIndex);
+        resumeData.certifications.splice(i, 1);
+        saveToLocalStorage();
+        renderCertificationsForm();
+        updatePreview();
+      });
+    });
+  }
+
+  // ===== CONTRIBUTIONS =====
+  function renderContributionsForm() {
+    const container = document.getElementById('contributionsContainer');
+    container.innerHTML = '';
+    resumeData.contributions.forEach((cont, i) => {
+      const div = document.createElement('div');
+      div.className = 'border p-3 rounded bg-gray-50';
+      div.innerHTML = `
+        <input type="text" data-cont-index="${i}" data-field="title" value="${cont.title || ''}" placeholder="Contribution Title" class="w-full p-2 mb-2 border rounded" />
+        <input type="url" data-cont-index="${i}" data-field="link" value="${cont.link || ''}" placeholder="Link (optional)" class="w-full p-2 mb-2 border rounded" />
+        <textarea data-cont-index="${i}" data-field="description" placeholder="Description" class="w-full p-2 border rounded" rows="2">${cont.description || ''}</textarea>
+        <button type="button" class="mt-2 text-red-600 text-sm remove-cont" data-cont-index="${i}">Remove</button>
+      `;
+      container.appendChild(div);
+    });
+
+    container.querySelectorAll('input, textarea').forEach(el => {
+      el.addEventListener('input', (e) => {
+        const i = parseInt(e.target.dataset.contIndex);
+        const field = e.target.dataset.field;
+        if (!resumeData.contributions[i]) resumeData.contributions[i] = {};
+        resumeData.contributions[i][field] = e.target.value;
+        saveToLocalStorage();
+        updatePreview();
+      });
+    });
+
+    container.querySelectorAll('.remove-cont').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const i = parseInt(e.target.dataset.contIndex);
+        resumeData.contributions.splice(i, 1);
+        saveToLocalStorage();
+        renderContributionsForm();
+        updatePreview();
+      });
+    });
+  }
+
+  // ===== REFERENCES =====
+  function renderReferencesForm() {
+    const container = document.getElementById('referencesContainer');
+    container.innerHTML = '';
+    resumeData.references.forEach((ref, i) => {
+      const div = document.createElement('div');
+      div.className = 'border p-3 rounded bg-gray-50';
+      div.innerHTML = `
+        <input type="text" data-ref-index="${i}" data-field="name" value="${ref.name || ''}" placeholder="Full Name" class="w-full p-2 mb-2 border rounded" />
+        <input type="text" data-ref-index="${i}" data-field="relationship" value="${ref.relationship || ''}" placeholder="Relationship (e.g., Manager at XYZ)" class="w-full p-2 mb-2 border rounded" />
+        <input type="text" data-ref-index="${i}" data-field="contact" value="${ref.contact || ''}" placeholder="Email or Phone" class="w-full p-2 mb-2 border rounded" />
+        <button type="button" class="mt-2 text-red-600 text-sm remove-ref" data-ref-index="${i}">Remove</button>
+      `;
+      container.appendChild(div);
+    });
+
+    container.querySelectorAll('input').forEach(el => {
+      el.addEventListener('input', (e) => {
+        const i = parseInt(e.target.dataset.refIndex);
+        const field = e.target.dataset.field;
+        if (!resumeData.references[i]) resumeData.references[i] = {};
+        resumeData.references[i][field] = e.target.value;
+        saveToLocalStorage();
+        updatePreview();
+      });
+    });
+
+    container.querySelectorAll('.remove-ref').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const i = parseInt(e.target.dataset.refIndex);
+        resumeData.references.splice(i, 1);
+        saveToLocalStorage();
+        renderReferencesForm();
+        updatePreview();
+      });
+    });
+  }
+
   // ===== PREVIEW =====
   function updatePreview() {
-    const { name, title, contact, summary, experience, education, skills } = resumeData;
+    const { name, title, contact, summary, experience, education, skills, projects, certifications, contributions, references } = resumeData;
 
     // Contact
     const contactItems = [];
@@ -390,7 +607,6 @@
     if (contact.linkedin) {
       contactItems.push(`🔗 <a href="${contact.linkedin}" target="_blank" class="text-primary-600 hover:underline">LinkedIn</a>`);
     }
-
     const contactHtml = contactItems.length 
       ? `<div class="flex flex-wrap justify-center gap-3 text-sm text-slate">${contactItems.map(item => `<span>${item}</span>`).join('')}</div>`
       : '';
@@ -413,7 +629,7 @@
       `;
     }).join('');
 
-    // Education (now supports multiple)
+    // Education
     const eduHtml = education.length ? `
       ${education.map(edu => `
         <article class="relative pl-5 border-l-2 border-primary-100 mb-5">
@@ -435,40 +651,105 @@
       </div>
     ` : '';
 
+    // ✅ Define new sections BEFORE previewHtml
+    // Projects
+    const projectsHtml = projects.length ? `
+      <section class="mb-6">
+        <h2 class="text-xl font-semibold text-primary-700 mb-4 pb-1 border-b border-primary-200">Projects</h2>
+        ${projects.map(proj => `
+          <article class="mb-4">
+            <div class="flex flex-wrap justify-between">
+              <h3 class="font-semibold">${proj.name}</h3>
+              ${proj.duration ? `<span class="text-sm text-slate">${proj.duration}</span>` : ''}
+            </div>
+            ${proj.link ? `<p class="text-sm text-primary-600 mb-1"><a href="${proj.link}" target="_blank" class="hover:underline">${proj.link}</a></p>` : ''}
+            <p class="text-gray-700">${proj.description}</p>
+          </article>
+        `).join('')}
+      </section>
+    ` : '';
+
+    // Certifications
+    const certsHtml = certifications.length ? `
+      <section class="mb-6">
+        <h2 class="text-xl font-semibold text-primary-700 mb-4 pb-1 border-b border-primary-200">Certifications</h2>
+        <ul class="space-y-2">
+          ${certifications.map(cert => `
+            <li>
+              <span class="font-medium">${cert.name}</span> — ${cert.issuer}
+              ${cert.date ? ` (${cert.date})` : ''}
+              ${cert.credentialId ? ` • ID: ${cert.credentialId}` : ''}
+            </li>
+          `).join('')}
+        </ul>
+      </section>
+    ` : '';
+
+    // Contributions
+    const contribsHtml = contributions.length ? `
+      <section class="mb-6">
+        <h2 class="text-xl font-semibold text-primary-700 mb-4 pb-1 border-b border-primary-200">Other Contributions</h2>
+      ${contributions.map(cont => `
+        <article class="mb-3">
+          <h3 class="font-medium">${cont.title}</h3>
+          ${cont.link ? `<p class="text-sm text-primary-600 mb-1"><a href="${cont.link}" target="_blank" class="hover:underline">${cont.link}</a></p>` : ''}
+          <p class="text-gray-700">${cont.description}</p>
+        </article>
+      `).join('')}
+    </section>
+    ` : '';
+
+    // References
+    const refsHtml = references.length ? `
+      <section>
+        <h2 class="text-xl font-semibold text-primary-700 mb-4 pb-1 border-b border-primary-200">References</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          ${references.map(ref => `
+            <div class="border-l-2 border-primary-100 pl-3">
+              <p class="font-medium">${ref.name}</p>
+              <p class="text-sm text-slate">${ref.relationship}</p>
+              <p class="text-sm">${ref.contact}</p>
+            </div>
+          `).join('')}
+        </div>
+      </section>
+    ` : '';
+
+    // ✅ NOW use all variables safely
     const previewHtml = `
       <header class="text-center mb-8">
         <h1 class="text-3xl font-bold mb-2">${name || 'Your Name'}</h1>
         <p class="text-lg text-primary-600 mb-3">${title || 'Your Title'}</p>
         ${contactHtml}
       </header>
-
       ${summary ? `
         <section class="mb-6">
           <h2 class="text-xl font-semibold text-primary-700 mb-2 pb-1 border-b border-primary-200">Professional Summary</h2>
           <p class="text-gray-700">${summary}</p>
         </section>
       ` : ''}
-
       ${experience.length ? `
         <section class="mb-6">
           <h2 class="text-xl font-semibold text-primary-700 mb-4 pb-1 border-b border-primary-200">Experience</h2>
           ${expHtml}
         </section>
       ` : ''}
-
       ${education.length ? `
         <section class="mb-6">
           <h2 class="text-xl font-semibold text-primary-700 mb-4 pb-1 border-b border-primary-200">Education</h2>
           ${eduHtml}
         </section>
       ` : ''}
-
       ${skills.length ? `
-        <section>
+        <section class="mb-6">
           <h2 class="text-xl font-semibold text-primary-700 mb-3 pb-1 border-b border-primary-200">Technical Skills</h2>
           ${skillsHtml}
         </section>
       ` : ''}
+      ${projectsHtml}
+      ${certsHtml}
+      ${contribsHtml}
+      ${refsHtml}
     `;
 
     const previewEl = document.getElementById('resumePreview');
@@ -496,34 +777,61 @@
         resumeData = {
           name: parsed.name || '',
           title: parsed.title || '',
-          contact: parsed.contact || { email: "", phone: "", website: "", linkedin: "" },
+          contact: {
+            email: parsed.contact?.email || '',
+            phone: parsed.contact?.phone || '',
+            website: parsed.contact?.website || '',
+            linkedin: parsed.contact?.linkedin || ''
+          },
           summary: parsed.summary || '',
-          experience: Array.isArray(parsed.experience) ? parsed.experience : [],
-          education: Array.isArray(parsed.education) ? parsed.education : [],
-          skills: Array.isArray(parsed.skills) ? parsed.skills : []
+          experience: Array.isArray(parsed.experience) 
+            ? parsed.experience.map(exp => ({
+                role: exp.role || '',
+                company: exp.company || '',
+                duration: exp.duration || '',
+                highlights: Array.isArray(exp.highlights) 
+                  ? exp.highlights.map(h => String(h || ''))
+                  : []
+              }))
+            : [],
+          education: Array.isArray(parsed.education)
+            ? parsed.education.map(edu => ({
+                degree: edu.degree || '',
+                school: edu.school || '',
+                duration: edu.duration || '',
+                details: edu.details || ''
+              }))
+            : [],
+          skills: Array.isArray(parsed.skills)
+            ? parsed.skills.map(s => String(s || ''))
+            : [],
+          projects: Array.isArray(parsed.projects) ? parsed.projects : [],
+          certifications: Array.isArray(parsed.certifications) ? parsed.certifications : [],
+          contributions: Array.isArray(parsed.contributions) ? parsed.contributions : [],
+          references: Array.isArray(parsed.references) ? parsed.references : []
         };
         
         // Populate top-level fields
         document.getElementById('name').value = resumeData.name;
         document.getElementById('title').value = resumeData.title;
         document.getElementById('summary').value = resumeData.summary;
+        document.getElementById('email').value = resumeData.contact.email;
+        document.getElementById('phone').value = resumeData.contact.phone;
+        document.getElementById('website').value = resumeData.contact.website;
+        document.getElementById('linkedin').value = resumeData.contact.linkedin;
         
-        // Contact
-        document.getElementById('email').value = resumeData.contact.email || '';
-        document.getElementById('phone').value = resumeData.contact.phone || '';
-        document.getElementById('website').value = resumeData.contact.website || '';
-        document.getElementById('linkedin').value = resumeData.contact.linkedin || '';
-        
-        // Skills
-        if (resumeData.skills.length) {
-          document.getElementById('skillsInput').value = resumeData.skills.join(', ');
-        }
-        
+        // Re-render all sections
         renderExperienceForm();
         renderEducationForm();
+        renderSkillsForm();
+        renderProjectsForm();
+        renderCertificationsForm();
+        renderContributionsForm();
+        renderReferencesForm();
       }
     } catch (e) {
-      console.error('Failed to load from localStorage', e);
+      console.error('Failed to load from localStorage:', e);
+      alert('⚠️ Failed to load saved data. Starting fresh.');
     }
   }
 
@@ -692,7 +1000,57 @@ function exportToPdf() {
   });
 }
 
-// Add this new function
+// New Skills form
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function renderSkillsForm() {
+  const container = document.getElementById('skillsContainer');
+  container.innerHTML = '';
+
+  resumeData.skills.forEach((skill, i) => {
+    const safeValue = escapeHtml(skill || ''); // Prevent HTML injection & breakage
+    const div = document.createElement('div');
+    div.className = 'flex gap-2';
+    div.innerHTML = `
+      <input type="text" 
+             data-skill-index="${i}" 
+             value="${safeValue}" 
+             placeholder="Skill (e.g., React, Python)" 
+             class="flex-1 p-2 border rounded text-sm" />
+      <button type="button" 
+              class="remove-skill text-red-600 text-sm font-medium"
+              data-skill-index="${i}">✕</button>
+    `;
+    container.appendChild(div);
+  });
+
+  // Rebind events
+  container.querySelectorAll('input[data-skill-index]').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const idx = parseInt(e.target.dataset.skillIndex);
+      resumeData.skills[idx] = e.target.value;
+      saveToLocalStorage();
+      updatePreview();
+    });
+  });
+
+  container.querySelectorAll('.remove-skill').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const idx = parseInt(e.target.dataset.skillIndex);
+      resumeData.skills.splice(idx, 1);
+      saveToLocalStorage();
+      renderSkillsForm();
+      updatePreview();
+    });
+  });
+}
+
+
+// Import JSON
 function setupImport() {
   document.getElementById('importJson').addEventListener('click', () => {
     document.getElementById('jsonFile').click();
@@ -738,7 +1096,7 @@ function setupImport() {
         document.getElementById('website').value = resumeData.contact.website;
         document.getElementById('linkedin').value = resumeData.contact.linkedin;
         
-        document.getElementById('skillsInput').value = resumeData.skills.join(', ');
+        renderSkillsForm();
 
         renderExperienceForm();
         renderEducationForm();
@@ -755,6 +1113,47 @@ function setupImport() {
     };
     reader.readAsText(file);
   });
+}
+
+// Clear all data
+function clearAllData() {
+  if (!confirm('⚠️ Are you sure? This will clear all resume data.')) return;
+
+  resumeData = {
+    name: "",
+    title: "",
+    contact: { email: "", phone: "", website: "", linkedin: "" },
+    summary: "",
+    experience: [],
+    education: [],
+    skills: [],
+    projects: [],
+    certifications: [],
+    contributions: [],
+    references: []
+  };
+
+  // Clear top fields
+  document.getElementById('name').value = '';
+  document.getElementById('title').value = '';
+  document.getElementById('summary').value = '';
+  document.getElementById('email').value = '';
+  document.getElementById('phone').value = '';
+  document.getElementById('website').value = '';
+  document.getElementById('linkedin').value = '';
+
+  // Re-render all sections
+  renderExperienceForm();
+  renderEducationForm();
+  renderSkillsForm();
+  renderProjectsForm();
+  renderCertificationsForm();
+  renderContributionsForm();
+  renderReferencesForm();
+
+  updatePreview();
+  saveToLocalStorage();
+  alert('✅ All fields cleared!');
 }
 
   async function saveToBackend() {
